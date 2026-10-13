@@ -1,0 +1,12 @@
+.git
+build
+build-*
+output
+reference
+tests
+examples
+ros
+lib/Rosless-Lanelet2
+lib/proxsuite-devel
+**/__pycache__
+**/*.pyc

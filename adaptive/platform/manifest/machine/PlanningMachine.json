@@ -1,0 +1,10 @@
+{
+  "generation-by": "planning-aa",
+  "autosar-version": "R20-11",
+  "manifest-type": "machine-manifest",
+  "machine-name": "PlanningMachine",
+  "trusted-platform-executable-launch-behavior": "no-trusted-platform-support",
+  "default-application-timeout": "undefined",
+  "environment-variables": [],
+  "wait-for-shutdown": "1.0"
+}

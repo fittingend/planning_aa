@@ -143,6 +143,30 @@ HPC S자의 기록 중간 경로와 이전 스무더 출력을 넣은 **조건�
 
 ## 빌드
 
+### Adaptive AUTOSAR 컨테이너 부트스트랩
+
+`adaptive/`에는 PopcornSAR PARA **R20-11 x86_64** SDK를 사용한 별도 빌드 진입점, Execution Management 매니페스트, `PlanningAA` 프로세스와 Docker 이미지 정의가 있다. SDK는 저장소에 복사하지 않는다. 기본 SDK 경로는 인접한 `../oss-ap/sdk/x86_64`이며, 다른 설치본은 `PARA_SDK`로 지정한다. 이 SDK의 버전은 `R20-11_v26.04.03_native-linux-gcc`이다. SDK 라이선스가 복제·배포를 제한하므로 SDK 런타임을 포함한 이미지는 권한을 확인하기 전까지 로컬 개발용으로만 사용한다.
+
+```sh
+./adaptive/build-image.sh
+./adaptive/run-image.sh
+```
+
+`IMAGE_TAG`로 이미지 이름을 바꿀 수 있다. `build-image.sh`는 Docker BuildKit의 별도 `para_sdk` 빌드 컨텍스트를 사용해 SDK를 빌드 중에 공급하며, 설치 트리에 EM·PARA 런타임·`PlanningAA`를 모아 실행 이미지에 넣는다. Docker 없이 CMake 빌드만 확인하려면 다음을 실행한다.
+
+```sh
+cmake -S adaptive -B build-adaptive -G Ninja \
+  -DPARA_SDK="$(realpath ../oss-ap/sdk/x86_64)" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX="$(pwd)/output/adaptive"
+cmake --build build-adaptive -j 4
+cmake --install build-adaptive --component Standalone
+```
+
+현재 `PlanningAA`는 `planning_core`에 링크하고 `ara::core` 초기화, `ara::exec`의 Running 보고, 종료 신호 처리를 수행하는 **실행 골격**이다. [위 In/Out 계약](#adaptive-autosar-앱-inout-인터페이스-초안)의 `ara::com` 서비스·이벤트, 지도 입력, 실제 궤적 발행은 아직 연결되지 않았다. 초기 빌드는 지도 어댑터와 ProxQP를 끄므로 원본 계산 동등성이나 실차 배포를 검증한 이미지가 아니다.
+
+### 계산 코어
+
 C++17, CMake, Eigen 3, Boost.Geometry 헤더가 필요하다. 지도·ProxSuite 등 선택 기능은 설치 의존성에 따라 활성화된다. 계산 코어에는 ROS/ament/ROS 메시지 생성물이 필요하지 않다.
 
 ```sh
