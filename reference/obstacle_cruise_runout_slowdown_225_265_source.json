@@ -1,0 +1,2284 @@
+[
+  {
+    "frame": 225,
+    "record_stamp_ns": 1767145040989484767,
+    "stop_debug": [
+      -0.3040061593055725,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.3040061593055725,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145040994484767,
+    "output_trajectory_count": 117,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 226,
+    "record_stamp_ns": 1767145041102343874,
+    "stop_debug": [
+      -0.10100849717855453,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.10100849717855453,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145041107343874,
+    "output_trajectory_count": 117,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 227,
+    "record_stamp_ns": 1767145041187162992,
+    "stop_debug": [
+      -0.16671304404735565,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.16671304404735565,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145041192162992,
+    "output_trajectory_count": 115,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 228,
+    "record_stamp_ns": 1767145041294286559,
+    "stop_debug": [
+      -0.1598483920097351,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.1598483920097351,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145041299286559,
+    "output_trajectory_count": 115,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 229,
+    "record_stamp_ns": 1767145041388727805,
+    "stop_debug": [
+      -0.1117958128452301,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.1117958128452301,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145041393727805,
+    "output_trajectory_count": 115,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 230,
+    "record_stamp_ns": 1767145041484617275,
+    "stop_debug": [
+      -0.11866046488285065,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.11866046488285065,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145041489617275,
+    "output_trajectory_count": 115,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 231,
+    "record_stamp_ns": 1767145041577912104,
+    "stop_debug": [
+      -0.15592573583126068,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.15592573583126068,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145041582912104,
+    "output_trajectory_count": 113,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 232,
+    "record_stamp_ns": 1767145041685549591,
+    "stop_debug": [
+      -0.24712757766246796,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.24712757766246796,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145041690549591,
+    "output_trajectory_count": 113,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 233,
+    "record_stamp_ns": 1767145041781899372,
+    "stop_debug": [
+      -0.24320492148399353,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.24320492148399353,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145041786899372,
+    "output_trajectory_count": 113,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 234,
+    "record_stamp_ns": 1767145041883157073,
+    "stop_debug": [
+      -0.13631244003772736,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.13631244003772736,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145041888157073,
+    "output_trajectory_count": 111,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 235,
+    "record_stamp_ns": 1767145041981931429,
+    "stop_debug": [
+      -0.15004174411296844,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.15004174411296844,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.33507126569747925,
+      22.392791748046875,
+      28.081357955932617,
+      3.0130345821380615,
+      3.0130345821380615,
+      45.0,
+      58.0
+    ],
+    "debug_stamp_ns": 1767145041986931429,
+    "output_trajectory_count": 113,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.25668735029,
+          "y": 24004.57119627316
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.2111660296828,
+          "y": 24005.206003611795
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 236,
+    "record_stamp_ns": 1767145042088018611,
+    "stop_debug": [
+      -0.09708583354949951,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.09708583354949951,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.27526187896728516,
+      21.76632308959961,
+      27.40634536743164,
+      3.0125861167907715,
+      3.0130300521850586,
+      44.0,
+      56.0
+    ],
+    "debug_stamp_ns": 1767145042093018611,
+    "output_trajectory_count": 113,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.3259100572427,
+          "y": 24004.472597590327
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.4326486009136,
+          "y": 24004.633645708676
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 237,
+    "record_stamp_ns": 1767145042183654087,
+    "stop_debug": [
+      -0.12062179297208786,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      3.055555582046509,
+      -0.12062179297208786,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      19.7921085357666,
+      25.324068069458008,
+      2.5623996257781982,
+      3.00852370262146,
+      40.0,
+      52.0
+    ],
+    "debug_stamp_ns": 1767145042188654087,
+    "output_trajectory_count": 111,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.890685869201,
+          "y": 24005.235678207802
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.531800272995,
+          "y": 24004.80619892549
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 238,
+    "record_stamp_ns": 1767145042281791028,
+    "stop_debug": [
+      -0.17161637544631958,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.17161637544631958,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      19.620153427124023,
+      24.70133399963379,
+      2.0,
+      2.998438596725464,
+      40.0,
+      51.0
+    ],
+    "debug_stamp_ns": 1767145042286791028,
+    "output_trajectory_count": 111,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.476053279164,
+          "y": 24004.693986847728
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.5459262388404,
+          "y": 24004.835814402868
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 239,
+    "record_stamp_ns": 1767145042383741916,
+    "stop_debug": [
+      -0.1421964317560196,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.1421964317560196,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      20.224903106689453,
+      25.011940002441406,
+      2.0,
+      2.9884541034698486,
+      41.0,
+      52.0
+    ],
+    "debug_stamp_ns": 1767145042388741916,
+    "output_trajectory_count": 111,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.4338189713394,
+          "y": 24004.791951991614
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.501826064437,
+          "y": 24005.879966442033
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 240,
+    "record_stamp_ns": 1767145042478682645,
+    "stop_debug": [
+      0.01765196956694126,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      0.01765196956694126,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      21.033897399902344,
+      25.666446685791016,
+      2.0,
+      2.978569746017456,
+      43.0,
+      53.0
+    ],
+    "debug_stamp_ns": 1767145042483682645,
+    "output_trajectory_count": 111,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.410910566663,
+          "y": 24004.971026207026
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.301578651387,
+          "y": 24005.8904113355
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 241,
+    "record_stamp_ns": 1767145042579867615,
+    "stop_debug": [
+      -0.16867437958717346,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.16867437958717346,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      20.760231018066406,
+      25.295574188232422,
+      2.0,
+      2.9687838554382324,
+      42.0,
+      52.0
+    ],
+    "debug_stamp_ns": 1767145042584867615,
+    "output_trajectory_count": 109,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.3710423077923,
+          "y": 24005.112487699058
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.2103695491655,
+          "y": 24005.941138225513
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 242,
+    "record_stamp_ns": 1767145042683334496,
+    "stop_debug": [
+      -0.11473780870437622,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.11473780870437622,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      21.29004669189453,
+      25.755815505981445,
+      2.0,
+      2.9590961933135986,
+      43.0,
+      53.0
+    ],
+    "debug_stamp_ns": 1767145042688334496,
+    "output_trajectory_count": 109,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.336352606511,
+          "y": 24005.233093285893
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.1732358879713,
+          "y": 24006.047458876263
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 243,
+    "record_stamp_ns": 1767145042781707913,
+    "stop_debug": [
+      -0.1108151450753212,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.1108151450753212,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      21.76165199279785,
+      26.174894332885742,
+      2.0,
+      2.949505090713501,
+      44.0,
+      54.0
+    ],
+    "debug_stamp_ns": 1767145042786707913,
+    "output_trajectory_count": 109,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.293772884435,
+          "y": 24005.350393425782
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.1035173139994,
+          "y": 24006.113601638703
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 244,
+    "record_stamp_ns": 1767145042884021577,
+    "stop_debug": [
+      -0.1117958128452301,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.1117958128452301,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      21.18659782409668,
+      25.573760986328125,
+      2.0,
+      2.9400100708007812,
+      43.0,
+      53.0
+    ],
+    "debug_stamp_ns": 1767145042889021577,
+    "output_trajectory_count": 107,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.2388161852386,
+          "y": 24005.466036514223
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.0046747985198,
+          "y": 24006.147581058063
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 245,
+    "record_stamp_ns": 1767145042980221300,
+    "stop_debug": [
+      -0.07453054189682007,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.07453054189682007,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      21.22821044921875,
+      25.57382583618164,
+      2.0,
+      2.930609941482544,
+      43.0,
+      53.0
+    ],
+    "debug_stamp_ns": 1767145042985221300,
+    "output_trajectory_count": 107,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.238938186191,
+          "y": 24005.530819990698
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.0842765814336,
+          "y": 24006.347660333824
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 246,
+    "record_stamp_ns": 1767145043084028612,
+    "stop_debug": [
+      -0.15396440029144287,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.15396440029144287,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      21.003538131713867,
+      25.287208557128906,
+      2.0,
+      2.9213039875030518,
+      43.0,
+      52.0
+    ],
+    "debug_stamp_ns": 1767145043089028612,
+    "output_trajectory_count": 107,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.254078963583,
+          "y": 24005.616938655625
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.216962078456,
+          "y": 24006.589467942857
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 247,
+    "record_stamp_ns": 1767145043178794000,
+    "stop_debug": [
+      -0.09708583354949951,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.09708583354949951,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      20.631423950195312,
+      24.839736938476562,
+      2.0,
+      2.91209077835083,
+      42.0,
+      51.0
+    ],
+    "debug_stamp_ns": 1767145043183794000,
+    "output_trajectory_count": 107,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.2810665000147,
+          "y": 24005.677395959934
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.3514963417488,
+          "y": 24006.768109274
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 248,
+    "record_stamp_ns": 1767145043281252007,
+    "stop_debug": [
+      -0.05589790642261505,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.05589790642261505,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      19.278697967529297,
+      23.413637161254883,
+      2.0,
+      2.9029698371887207,
+      39.0,
+      48.0
+    ],
+    "debug_stamp_ns": 1767145043286252007,
+    "output_trajectory_count": 105,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.299261385595,
+          "y": 24005.76405644097
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.380069577491,
+          "y": 24005.809532422998
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 249,
+    "record_stamp_ns": 1767145043380520805,
+    "stop_debug": [
+      -0.16867437958717346,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.16867437958717346,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      18.936687469482422,
+      23.018264770507812,
+      2.0,
+      2.8939402103424072,
+      38.0,
+      48.0
+    ],
+    "debug_stamp_ns": 1767145043385520805,
+    "output_trajectory_count": 105,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.3190332678705,
+          "y": 24005.862173382942
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.4024247273014,
+          "y": 24005.950291401045
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 250,
+    "record_stamp_ns": 1767145043486861286,
+    "stop_debug": [
+      -0.17161637544631958,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.17161637544631958,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      18.7349853515625,
+      22.777202606201172,
+      2.0,
+      2.8850009441375732,
+      38.0,
+      47.0
+    ],
+    "debug_stamp_ns": 1767145043491861286,
+    "output_trajectory_count": 105,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.3263037711613,
+          "y": 24005.99660489146
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.408740449991,
+          "y": 24006.067425599256
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 251,
+    "record_stamp_ns": 1767145043578394180,
+    "stop_debug": [
+      -0.23045627772808075,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.23045627772808075,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      17.622406005859375,
+      21.636709213256836,
+      2.0,
+      2.8761508464813232,
+      36.0,
+      45.0
+    ],
+    "debug_stamp_ns": 1767145043583394180,
+    "output_trajectory_count": 103,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.327427306461,
+          "y": 24006.03716860572
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.410887948715,
+          "y": 24006.094120970298
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 252,
+    "record_stamp_ns": 1767145043682814886,
+    "stop_debug": [
+      -0.1412157565355301,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.1412157565355301,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      17.559471130371094,
+      21.55124855041504,
+      2.0,
+      2.86738920211792,
+      36.0,
+      45.0
+    ],
+    "debug_stamp_ns": 1767145043687814886,
+    "output_trajectory_count": 103,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.327873494449,
+          "y": 24006.156319645263
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.412771338925,
+          "y": 24006.19750158985
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 253,
+    "record_stamp_ns": 1767145043780790927,
+    "stop_debug": [
+      -0.054917238652706146,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.054917238652706146,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      17.521263122558594,
+      21.501083374023438,
+      2.0,
+      2.858715534210205,
+      36.0,
+      44.0
+    ],
+    "debug_stamp_ns": 1767145043785790927,
+    "output_trajectory_count": 102,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.329663364531,
+          "y": 24006.254736884173
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.4637020316127,
+          "y": 24007.383094023662
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 254,
+    "record_stamp_ns": 1767145043878159874,
+    "stop_debug": [
+      -0.27948951721191406,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.27948951721191406,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      17.544925689697266,
+      21.52280044555664,
+      2.0,
+      2.850128173828125,
+      36.0,
+      45.0
+    ],
+    "debug_stamp_ns": 1767145043883159874,
+    "output_trajectory_count": 103,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.31698021902,
+          "y": 24006.342869627217
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.4239946722087,
+          "y": 24007.432534435524
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 255,
+    "record_stamp_ns": 1767145043982271253,
+    "stop_debug": [
+      -0.16180972754955292,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.16180972754955292,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      16.543542861938477,
+      20.51993751525879,
+      2.0,
+      2.8416268825531006,
+      34.0,
+      43.0
+    ],
+    "debug_stamp_ns": 1767145043987271253,
+    "output_trajectory_count": 101,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.3165795889754,
+          "y": 24006.397798451973
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.4136072735173,
+          "y": 24007.48367502872
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 256,
+    "record_stamp_ns": 1767145044082445490,
+    "stop_debug": [
+      -0.14513841271400452,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.14513841271400452,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      16.54702377319336,
+      20.522123336791992,
+      2.0,
+      2.8332107067108154,
+      34.0,
+      43.0
+    ],
+    "debug_stamp_ns": 1767145044087445490,
+    "output_trajectory_count": 101,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.3189811648044,
+          "y": 24006.460528991625
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.4214765617244,
+          "y": 24007.552136680086
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 257,
+    "record_stamp_ns": 1767145044179302165,
+    "stop_debug": [
+      -0.17161637544631958,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.17161637544631958,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [
+      0.0,
+      16.527236938476562,
+      20.496829986572266,
+      2.0,
+      2.824878692626953,
+      34.0,
+      42.0
+    ],
+    "debug_stamp_ns": 1767145044184302165,
+    "output_trajectory_count": 101,
+    "markers": {
+      "counts": {
+        "obstacles_to_slow_down": 1,
+        "slow_down_collision_points": 2,
+        "intentionally_ignored_obstacles": 1,
+        "detection_polygons": 1,
+        "slow_down_virtual_wall": 2,
+        "slow_down_factor_text": 2
+      },
+      "leading": [
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2578.3208342035005,
+          "y": 24006.481315177494
+        },
+        {
+          "namespace": "slow_down_collision_points",
+          "x": 2577.439219644528,
+          "y": 24007.57956937614
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 258,
+    "record_stamp_ns": 1767145044284583362,
+    "stop_debug": [
+      -0.23045627772808075,
+      0.0,
+      0.0,
+      12.786441802978516,
+      0.0017391713336110115,
+      6.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.23045627772808075,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145044289583362,
+    "output_trajectory_count": 98,
+    "markers": {
+      "counts": {
+        "obstacles_to_stop": 1,
+        "stop_collision_points": 1,
+        "detection_polygons": 1
+      },
+      "leading": [
+        {
+          "namespace": "obstacles_to_stop",
+          "x": 2577.924807302515,
+          "y": 24007.040959922113
+        },
+        {
+          "namespace": "stop_collision_points",
+          "x": 2578.33565585641,
+          "y": 24006.47284209468
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 259,
+    "record_stamp_ns": 1767145044380349870,
+    "stop_debug": [
+      -0.2834121882915497,
+      0.0,
+      0.0,
+      12.284160614013672,
+      -0.015214268118143082,
+      6.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.2834121882915497,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145044385349870,
+    "output_trajectory_count": 98,
+    "markers": {
+      "counts": {
+        "obstacles_to_stop": 1,
+        "stop_collision_points": 1,
+        "detection_polygons": 1
+      },
+      "leading": [
+        {
+          "namespace": "obstacles_to_stop",
+          "x": 2577.9487692116077,
+          "y": 24007.100361268163
+        },
+        {
+          "namespace": "stop_collision_points",
+          "x": 2578.3421579669016,
+          "y": 24006.531173179505
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 260,
+    "record_stamp_ns": 1767145044479903596,
+    "stop_debug": [
+      -0.303025484085083,
+      0.0,
+      0.0,
+      12.272224426269531,
+      -0.013223153539001942,
+      6.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.303025484085083,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145044484903596,
+    "output_trajectory_count": 97,
+    "markers": {
+      "counts": {
+        "obstacles_to_stop": 1,
+        "stop_collision_points": 1,
+        "detection_polygons": 1
+      },
+      "leading": [
+        {
+          "namespace": "obstacles_to_stop",
+          "x": 2577.9511085701142,
+          "y": 24007.144267638276
+        },
+        {
+          "namespace": "stop_collision_points",
+          "x": 2578.344580653038,
+          "y": 24006.578207882118
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 261,
+    "record_stamp_ns": 1767145044579754326,
+    "stop_debug": [
+      -0.3000834882259369,
+      0.0,
+      0.0,
+      11.751548767089844,
+      -0.011658797040581703,
+      6.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.777777671813965,
+      -0.3000834882259369,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145044584754326,
+    "output_trajectory_count": 97,
+    "markers": {
+      "counts": {
+        "obstacles_to_stop": 1,
+        "stop_collision_points": 1,
+        "detection_polygons": 1
+      },
+      "leading": [
+        {
+          "namespace": "obstacles_to_stop",
+          "x": 2577.954305728554,
+          "y": 24007.203408429512
+        },
+        {
+          "namespace": "stop_collision_points",
+          "x": 2578.34830026631,
+          "y": 24006.6398375321
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 262,
+    "record_stamp_ns": 1767145044676867839,
+    "stop_debug": [
+      -0.5148491263389587,
+      0.0,
+      0.0,
+      11.764233589172363,
+      0.0064622340723872185,
+      6.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.5,
+      -0.5148491263389587,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145044681867839,
+    "output_trajectory_count": 95,
+    "markers": {
+      "counts": {
+        "obstacles_to_stop": 1,
+        "stop_collision_points": 1,
+        "detection_polygons": 1
+      },
+      "leading": [
+        {
+          "namespace": "obstacles_to_stop",
+          "x": 2577.9315438475855,
+          "y": 24007.181925828907
+        },
+        {
+          "namespace": "stop_collision_points",
+          "x": 2578.3362963995623,
+          "y": 24006.637419399358
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 263,
+    "record_stamp_ns": 1767145044784589849,
+    "stop_debug": [
+      -0.5148491263389587,
+      0.0,
+      0.0,
+      11.286044120788574,
+      0.00719079002737999,
+      6.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.5,
+      -0.5148491263389587,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145044789589849,
+    "output_trajectory_count": 95,
+    "markers": {
+      "counts": {
+        "obstacles_to_stop": 1,
+        "stop_collision_points": 1,
+        "detection_polygons": 1
+      },
+      "leading": [
+        {
+          "namespace": "obstacles_to_stop",
+          "x": 2577.9353175494007,
+          "y": 24007.2432418123
+        },
+        {
+          "namespace": "stop_collision_points",
+          "x": 2578.340452087389,
+          "y": 24006.69901953576
+        }
+      ],
+      "detection_points": null
+    }
+  },
+  {
+    "frame": 264,
+    "record_stamp_ns": 1767145044881741088,
+    "stop_debug": [
+      -0.49817782640457153,
+      0.0,
+      0.0,
+      10.820147514343262,
+      0.02572135254740715,
+      6.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      2.5,
+      -0.49817782640457153,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "slowdown_debug": [],
+    "debug_stamp_ns": 1767145044886741088,
+    "output_trajectory_count": 95,
+    "markers": {
+      "counts": {
+        "obstacles_to_stop": 1,
+        "stop_collision_points": 1,
+        "detection_polygons": 1
+      },
+      "leading": [
+        {
+          "namespace": "obstacles_to_stop",
+          "x": 2577.9013244664284,
+          "y": 24007.229138916387
+        },
+        {
+          "namespace": "stop_collision_points",
+          "x": 2578.317856264729,
+          "y": 24006.714148807463
+        }
+      ],
+      "detection_points": null
+    }
+  }
+]

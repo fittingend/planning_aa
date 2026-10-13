@@ -1,0 +1,55 @@
+[
+  {
+    "frame": 240,
+    "record_stamp_ns": 1767155101459172779,
+    "stop_debug": [
+      -0.1117958128452301,
+      0.0,
+      0.0,
+      11.138858795166016,
+      -0.29668089747428894,
+      6.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      5.0,
+      -0.1117958128452301,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "debug_stamp_ns": 1767155101464172779,
+    "output_trajectory_count": 102,
+    "markers": {
+      "counts": {
+        "obstacles_to_stop": 1,
+        "stop_collision_points": 1,
+        "detection_polygons": 1
+      },
+      "leading": [
+        {
+          "namespace": "obstacles_to_stop",
+          "x": 15.0,
+          "y": 4.03964708
+        },
+        {
+          "namespace": "stop_collision_points",
+          "x": 15.0,
+          "y": 0.13825183773093247
+        }
+      ],
+      "detection_points": null
+    }
+  }
+]

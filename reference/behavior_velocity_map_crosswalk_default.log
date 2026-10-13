@@ -1,0 +1,63 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-10-06-08-34-32-904554-ROG-Zephyrus-316027
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [autoware_behavior_velocity_planner_node-1]: process started with pid [316037]
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.316391981] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isActivated] uuid : 197f588c7d686b28af4a27fab60b0968 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.316431836] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isRTCEnabled] uuid : 197f588c7d686b28af4a27fab60b0968 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.316435224] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isActivated] uuid : be603458e99cbb66e449c0445e507a2e is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.316437424] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isRTCEnabled] uuid : be603458e99cbb66e449c0445e507a2e is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.318842366] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [updateCooperateStatus]  Cannot register RUNNING as initial state
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.621967978] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isActivated] uuid : 197f588c7d686b28af4a27fab60b0968 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.621985323] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isRTCEnabled] uuid : 197f588c7d686b28af4a27fab60b0968 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.621988113] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isActivated] uuid : be603458e99cbb66e449c0445e507a2e is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.621990241] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isRTCEnabled] uuid : be603458e99cbb66e449c0445e507a2e is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.624545474] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [updateCooperateStatus]  Cannot register RUNNING as initial state
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.978255006] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isActivated] uuid : 197f588c7d686b28af4a27fab60b0968 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.978273912] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isRTCEnabled] uuid : 197f588c7d686b28af4a27fab60b0968 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.978276730] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isActivated] uuid : be603458e99cbb66e449c0445e507a2e is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.978278922] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isRTCEnabled] uuid : be603458e99cbb66e449c0445e507a2e is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275676.981014435] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [updateCooperateStatus]  Cannot register RUNNING as initial state
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275677.285157158] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isActivated] uuid : 197f588c7d686b28af4a27fab60b0968 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275677.285177023] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isRTCEnabled] uuid : 197f588c7d686b28af4a27fab60b0968 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275677.285179745] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isActivated] uuid : be603458e99cbb66e449c0445e507a2e is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275677.285181912] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [isRTCEnabled] uuid : be603458e99cbb66e449c0445e507a2e is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275677.287929291] [probe.behavior_velocity_planner.RTCInterface[crosswalk]]: [updateCooperateStatus]  Cannot register RUNNING as initial state
+[autoware_behavior_velocity_planner_node-1] 
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[INFO] [autoware_behavior_velocity_planner_node-1]: sending signal 'SIGINT' to process[autoware_behavior_velocity_planner_node-1]
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791275677.449398700] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791275677.452415380] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [autoware_behavior_velocity_planner_node-1]: process has finished cleanly [pid 316037]

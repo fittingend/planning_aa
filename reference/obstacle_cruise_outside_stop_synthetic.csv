@@ -1,0 +1,11 @@
+case,source_stop_count,planning_aa_stop_count,source_collision_distance_m,planning_aa_collision_distance_m
+launch disabled,0,0,0.0,0.0
+pedestrian,1,1,10.90999984741211,10.91
+late crossing,0,0,0.0,0.0
+top path misses,0,0,0.0,0.0
+two paths,1,1,10.90999984741211,10.91
+bicycle,1,1,10.90999984741211,10.91
+car,1,1,9.210000038146973,9.21
+curved road,1,1,10.835670471191406,10.835670113410892
+polygon,1,1,11.210000038146973,11.21
+curved polygon,1,1,11.138858795166016,11.13885887730823

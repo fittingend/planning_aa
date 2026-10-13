@@ -1,0 +1,21 @@
+<launch>
+  <arg name="with_objects" default="false"/>
+  <arg name="with_points" default="false"/>
+  <node_container pkg="rclcpp_components" exec="component_container_mt"
+                  name="costmap_probe_container" namespace="/probe">
+    <composable_node pkg="autoware_costmap_generator"
+                     plugin="autoware::costmap_generator::CostmapGenerator"
+                     name="costmap_generator" namespace="/probe">
+      <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/costmap_generator.param.yaml"/>
+      <param name="activate_by_scenario" value="true"/>
+      <param name="use_objects" value="$(var with_objects)"/>
+      <param name="use_points" value="$(var with_points)"/>
+      <remap from="~/input/vector_map" to="/probe/map"/>
+      <remap from="~/input/scenario" to="/probe/scenario"/>
+      <remap from="~/input/objects" to="/probe/objects"/>
+      <remap from="~/input/points_no_ground" to="/probe/points"/>
+      <remap from="~/output/occupancy_grid" to="/probe/occupancy_grid"/>
+      <remap from="~/output/grid_map" to="/probe/grid_map"/>
+    </composable_node>
+  </node_container>
+</launch>

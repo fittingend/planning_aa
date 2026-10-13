@@ -1,0 +1,15 @@
+<launch>
+  <arg name="adapt_expansion_distance" default="true"/>
+  <node pkg="autoware_freespace_planner" exec="freespace_planner"
+        name="freespace_planner" namespace="/probe" output="screen">
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/parking/freespace_planner/freespace_planner.param.yaml"/>
+    <param from="/source/src/vehicle/sample_vehicle_launch/sample_vehicle_description/config/vehicle_info.param.yaml"/>
+    <param name="astar.adapt_expansion_distance" value="$(var adapt_expansion_distance)"/>
+    <remap from="~/input/route" to="/probe/route"/>
+    <remap from="~/input/occupancy_grid" to="/probe/occupancy_grid"/>
+    <remap from="~/input/scenario" to="/probe/scenario"/>
+    <remap from="~/input/odometry" to="/probe/odometry"/>
+    <remap from="~/output/trajectory" to="/probe/trajectory"/>
+    <remap from="is_completed" to="/probe/is_completed"/>
+  </node>
+</launch>

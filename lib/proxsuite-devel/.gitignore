@@ -1,0 +1,4 @@
+build/*
+Xcode*
+*.pyc
+.vscode*

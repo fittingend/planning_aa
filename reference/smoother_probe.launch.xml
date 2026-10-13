@@ -1,0 +1,26 @@
+<launch>
+  <node pkg="autoware_velocity_smoother" exec="velocity_smoother_node"
+        name="velocity_smoother" namespace="/planning/scenario_planning" output="screen">
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/common.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/nearest_search.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/autoware_velocity_smoother/velocity_smoother.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/autoware_velocity_smoother/JerkFiltered.param.yaml"/>
+    <param name="wheel_radius" value="0.383"/>
+    <param name="wheel_width" value="0.235"/>
+    <param name="wheel_base" value="2.79"/>
+    <param name="wheel_tread" value="1.64"/>
+    <param name="front_overhang" value="1.0"/>
+    <param name="rear_overhang" value="1.1"/>
+    <param name="left_overhang" value="0.128"/>
+    <param name="right_overhang" value="0.128"/>
+    <param name="vehicle_height" value="2.5"/>
+    <param name="max_steer_angle" value="0.7"/>
+    <param name="algorithm_type" value="JerkFiltered"/>
+    <param name="publish_debug_trajs" value="true"/>
+    <remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
+    <remap from="~/output/trajectory" to="/planning/scenario_planning/velocity_smoother/trajectory"/>
+    <remap from="~/input/acceleration" to="/localization/acceleration"/>
+    <remap from="~/input/external_velocity_limit_mps" to="/planning/scenario_planning/max_velocity"/>
+    <remap from="~/input/operation_mode_state" to="/system/operation_mode/state"/>
+  </node>
+</launch>

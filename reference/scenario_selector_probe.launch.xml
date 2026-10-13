@@ -1,0 +1,15 @@
+<launch>
+  <node pkg="autoware_scenario_selector" exec="autoware_scenario_selector_node"
+        name="scenario_selector" namespace="/planning/scenario_planning" output="screen">
+    <param from="/source/src/universe/autoware.universe/planning/autoware_scenario_selector/config/scenario_selector.param.yaml"/>
+    <remap from="input/lane_driving/trajectory" to="/probe/lane_trajectory"/>
+    <remap from="input/parking/trajectory" to="/probe/parking_trajectory"/>
+    <remap from="input/lanelet_map" to="/probe/map"/>
+    <remap from="input/route" to="/probe/route"/>
+    <remap from="input/odometry" to="/probe/odometry"/>
+    <remap from="input/operation_mode_state" to="/probe/mode"/>
+    <remap from="is_parking_completed" to="/probe/parking_completed"/>
+    <remap from="output/scenario" to="/probe/scenario"/>
+    <remap from="output/trajectory" to="/probe/selected_trajectory"/>
+  </node>
+</launch>

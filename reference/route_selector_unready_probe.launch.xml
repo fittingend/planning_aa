@@ -1,0 +1,14 @@
+<launch>
+  <node_container pkg="rclcpp_components" exec="component_container_mt"
+                  name="route_selector_unready_container" namespace="/probe">
+    <composable_node pkg="autoware_mission_planner_universe"
+                     plugin="autoware::mission_planner_universe::RouteSelector"
+                     name="route_selector" namespace="/probe">
+      <remap from="~/planner/clear_route" to="/probe/missing_planner/clear_route"/>
+      <remap from="~/planner/set_waypoint_route" to="/probe/missing_planner/set_waypoint_route"/>
+      <remap from="~/planner/set_lanelet_route" to="/probe/missing_planner/set_lanelet_route"/>
+      <remap from="~/planner/state" to="/probe/missing_planner/state"/>
+      <remap from="~/planner/route" to="/probe/missing_planner/route"/>
+    </composable_node>
+  </node_container>
+</launch>

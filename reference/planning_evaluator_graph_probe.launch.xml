@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="autoware_planning_evaluator" exec="planning_evaluator"
+        name="planning_evaluator" namespace="/probe">
+    <param from="/source/src/universe/autoware.universe/evaluator/autoware_planning_evaluator/config/planning_evaluator.param.yaml"/>
+    <param name="output_metrics" value="false"/>
+  </node>
+</launch>

@@ -1,0 +1,20 @@
+{
+  "bag_timestamp": 1767154853070492236,
+  "scenario": "Parking",
+  "ego": {
+    "x": 2585.016995171108,
+    "y": 23942.35769895078,
+    "velocity": 0.0
+  },
+  "input_points": 216,
+  "fresh_published": 1,
+  "stale_published": 0,
+  "output_points": 216,
+  "synthetic_parking_timeout": {
+    "initial_scenario": "LaneDriving",
+    "completed_scenario": "Parking",
+    "transition_delay_s": 5.248456585002714,
+    "goal_x": 0.0,
+    "goal_y": 0.0
+  }
+}

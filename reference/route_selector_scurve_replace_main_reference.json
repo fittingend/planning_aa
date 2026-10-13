@@ -1,0 +1,422 @@
+{
+  "bag_timestamp": 1767147813910822845,
+  "goal_path_index": 50,
+  "mrm_goal_path_index": 45,
+  "replace_main_during_mrm": 55,
+  "operations": [
+    {
+      "name": "main/set_waypoint_route",
+      "success": true,
+      "code": 0,
+      "events_after": 11
+    },
+    {
+      "name": "mrm/set_waypoint_route",
+      "success": true,
+      "code": 0,
+      "events_after": 18
+    },
+    {
+      "name": "main/set_waypoint_route_during_mrm",
+      "success": true,
+      "code": 0,
+      "events_after": 19
+    },
+    {
+      "name": "mrm/clear_route",
+      "success": true,
+      "code": 0,
+      "events_after": 26
+    }
+  ],
+  "events": [
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 1
+    },
+    {
+      "channel": "mrm",
+      "kind": "state",
+      "value": 1
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 2
+    },
+    {
+      "channel": "mrm",
+      "kind": "state",
+      "value": 2
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 2
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 3
+    },
+    {
+      "channel": "planner",
+      "kind": "route",
+      "uuid": [
+        63,
+        64,
+        181,
+        147,
+        251,
+        28,
+        231,
+        79,
+        35,
+        186,
+        153,
+        147,
+        202,
+        89,
+        83,
+        190
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2516.184776194247,
+        24347.656471167207
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791608684207790080
+    },
+    {
+      "channel": "goal_echo",
+      "kind": "pose",
+      "frame_id": "map",
+      "stamp_ns": 1791608684207790080,
+      "goal": [
+        2516.184776194247,
+        24347.656471167207
+      ]
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "main",
+      "kind": "route",
+      "uuid": [
+        63,
+        64,
+        181,
+        147,
+        251,
+        28,
+        231,
+        79,
+        35,
+        186,
+        153,
+        147,
+        202,
+        89,
+        83,
+        190
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2516.184776194247,
+        24347.656471167207
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791608684207790080
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 5
+    },
+    {
+      "channel": "planner",
+      "kind": "route",
+      "uuid": [
+        51,
+        249,
+        80,
+        168,
+        122,
+        116,
+        255,
+        66,
+        97,
+        120,
+        231,
+        198,
+        95,
+        102,
+        108,
+        239
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2524.3769475926742,
+        24341.94047167616
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791608685092740488
+    },
+    {
+      "channel": "goal_echo",
+      "kind": "pose",
+      "frame_id": "map",
+      "stamp_ns": 1791608685092740488,
+      "goal": [
+        2524.3769475926742,
+        24341.94047167616
+      ]
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 8
+    },
+    {
+      "channel": "mrm",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "mrm",
+      "kind": "route",
+      "uuid": [
+        51,
+        249,
+        80,
+        168,
+        122,
+        116,
+        255,
+        66,
+        97,
+        120,
+        231,
+        198,
+        95,
+        102,
+        108,
+        239
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2524.3769475926742,
+        24341.94047167616
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791608685092740488
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 8
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 5
+    },
+    {
+      "channel": "planner",
+      "kind": "route",
+      "uuid": [
+        205,
+        166,
+        60,
+        173,
+        93,
+        100,
+        57,
+        39,
+        45,
+        190,
+        217,
+        87,
+        23,
+        165,
+        219,
+        194
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2509.166973715653,
+        24354.769392766637
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791608685963497060
+    },
+    {
+      "channel": "goal_echo",
+      "kind": "pose",
+      "frame_id": "map",
+      "stamp_ns": 1791608685963497060,
+      "goal": [
+        2509.166973715653,
+        24354.769392766637
+      ]
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "mrm",
+      "kind": "state",
+      "value": 2
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "main",
+      "kind": "route",
+      "uuid": [
+        205,
+        166,
+        60,
+        173,
+        93,
+        100,
+        57,
+        39,
+        45,
+        190,
+        217,
+        87,
+        23,
+        165,
+        219,
+        194
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2509.166973715653,
+        24354.769392766637
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791608685963497060
+    }
+  ],
+  "topic_graph": {
+    "/probe/echo_back_goal_pose": {
+      "types": [
+        "geometry_msgs/msg/PoseStamped"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    },
+    "/probe/mission_planner/route": {
+      "types": [
+        "autoware_planning_msgs/msg/LaneletRoute"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    },
+    "/probe/mission_planner/state": {
+      "types": [
+        "tier4_planning_msgs/msg/RouteState"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    },
+    "/probe/route_selector/main/route": {
+      "types": [
+        "autoware_planning_msgs/msg/LaneletRoute"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    },
+    "/probe/route_selector/main/state": {
+      "types": [
+        "tier4_planning_msgs/msg/RouteState"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    },
+    "/probe/route_selector/mrm/route": {
+      "types": [
+        "autoware_planning_msgs/msg/LaneletRoute"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    },
+    "/probe/route_selector/mrm/state": {
+      "types": [
+        "tier4_planning_msgs/msg/RouteState"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    }
+  },
+  "route_services": {
+    "/probe/mission_planner/clear_route": [
+      "tier4_planning_msgs/srv/ClearRoute"
+    ],
+    "/probe/mission_planner/set_lanelet_route": [
+      "tier4_planning_msgs/srv/SetLaneletRoute"
+    ],
+    "/probe/mission_planner/set_waypoint_route": [
+      "tier4_planning_msgs/srv/SetWaypointRoute"
+    ],
+    "/probe/route_selector/main/clear_route": [
+      "tier4_planning_msgs/srv/ClearRoute"
+    ],
+    "/probe/route_selector/main/set_lanelet_route": [
+      "tier4_planning_msgs/srv/SetLaneletRoute"
+    ],
+    "/probe/route_selector/main/set_waypoint_route": [
+      "tier4_planning_msgs/srv/SetWaypointRoute"
+    ],
+    "/probe/route_selector/mrm/clear_route": [
+      "tier4_planning_msgs/srv/ClearRoute"
+    ],
+    "/probe/route_selector/mrm/set_lanelet_route": [
+      "tier4_planning_msgs/srv/SetLaneletRoute"
+    ],
+    "/probe/route_selector/mrm/set_waypoint_route": [
+      "tier4_planning_msgs/srv/SetWaypointRoute"
+    ]
+  }
+}

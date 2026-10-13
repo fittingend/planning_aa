@@ -1,0 +1,10 @@
+<launch>
+  <node pkg="autoware_remaining_distance_time_calculator"
+        exec="autoware_remaining_distance_time_calculator_node"
+        name="remaining_distance_time_calculator" namespace="/probe">
+    <param from="/source/src/universe/autoware.universe/planning/autoware_remaining_distance_time_calculator/config/remaining_distance_time_calculator.param.yaml"/>
+    <remap from="~/input/scenario" to="/probe/scenario"/>
+    <remap from="~/output/mission_remaining_distance_time"
+           to="/probe/mission_remaining_distance_time"/>
+  </node>
+</launch>

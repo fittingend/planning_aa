@@ -1,0 +1,32 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-10-06-08-04-40-130194-ROG-Zephyrus-288894
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [autoware_behavior_velocity_planner_node-1]: process started with pid [288904]
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791273883.971724129] [probe.behavior_velocity_planner.stop_line_module]: APPROACH -> STOPPED
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791273883.971763543] [probe.behavior_velocity_planner.stop_line_module]: Vehicle cannot stop before stop line
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791273885.392811700] [probe.behavior_velocity_planner.stop_line_module]: STOPPED -> START
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791273888.110112250] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [autoware_behavior_velocity_planner_node-1]: sending signal 'SIGINT' to process[autoware_behavior_velocity_planner_node-1]
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791273888.111667998] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [autoware_behavior_velocity_planner_node-1]: process has finished cleanly [pid 288904]

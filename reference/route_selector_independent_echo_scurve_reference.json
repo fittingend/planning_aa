@@ -1,0 +1,542 @@
+{
+  "goal_echo_implementation": "planning-aa",
+  "bag_timestamp": 1767147813910822845,
+  "goal_path_index": 50,
+  "mrm_goal_path_index": 45,
+  "replace_main_during_mrm": null,
+  "invalid_mrm_first": false,
+  "invalid_main_after_set": false,
+  "operations": [
+    {
+      "name": "main/set_waypoint_route",
+      "success": true,
+      "code": 0,
+      "events_after": 12
+    },
+    {
+      "name": "mrm/set_waypoint_route",
+      "success": true,
+      "code": 0,
+      "events_after": 19
+    },
+    {
+      "name": "mrm/clear_route",
+      "success": true,
+      "code": 0,
+      "events_after": 26
+    }
+  ],
+  "events": [
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 1
+    },
+    {
+      "channel": "mrm",
+      "kind": "state",
+      "value": 1
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 2
+    },
+    {
+      "channel": "mrm",
+      "kind": "state",
+      "value": 2
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 2
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 2
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 3
+    },
+    {
+      "channel": "planner",
+      "kind": "route",
+      "uuid": [
+        0,
+        65,
+        94,
+        121,
+        238,
+        129,
+        62,
+        51,
+        245,
+        198,
+        75,
+        240,
+        89,
+        146,
+        4,
+        212
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2516.184776194247,
+        24347.656471167207
+      ],
+      "goal_pose": [
+        2516.184776194247,
+        24347.656471167207,
+        0.0,
+        0.0,
+        0.0,
+        0.9341921515617596,
+        0.3567702677640199
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791633672327207902
+    },
+    {
+      "channel": "goal_echo",
+      "kind": "pose",
+      "frame_id": "map",
+      "stamp_ns": 1791633672327207902,
+      "goal": [
+        2516.184776194247,
+        24347.656471167207
+      ],
+      "goal_pose": [
+        2516.184776194247,
+        24347.656471167207,
+        0.0,
+        0.0,
+        0.0,
+        0.9341921515617596,
+        0.3567702677640199
+      ]
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "main",
+      "kind": "route",
+      "uuid": [
+        0,
+        65,
+        94,
+        121,
+        238,
+        129,
+        62,
+        51,
+        245,
+        198,
+        75,
+        240,
+        89,
+        146,
+        4,
+        212
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2516.184776194247,
+        24347.656471167207
+      ],
+      "goal_pose": [
+        2516.184776194247,
+        24347.656471167207,
+        0.0,
+        0.0,
+        0.0,
+        0.9341921515617596,
+        0.3567702677640199
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791633672327207902
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 5
+    },
+    {
+      "channel": "planner",
+      "kind": "route",
+      "uuid": [
+        105,
+        48,
+        210,
+        88,
+        21,
+        82,
+        193,
+        237,
+        14,
+        91,
+        112,
+        5,
+        151,
+        250,
+        3,
+        104
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2524.3769475926742,
+        24341.94047167616
+      ],
+      "goal_pose": [
+        2524.3769475926742,
+        24341.94047167616,
+        0.0,
+        0.0,
+        0.0,
+        0.9643457629044425,
+        0.2646455168111651
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791633673258621451
+    },
+    {
+      "channel": "goal_echo",
+      "kind": "pose",
+      "frame_id": "map",
+      "stamp_ns": 1791633673258621451,
+      "goal": [
+        2524.3769475926742,
+        24341.94047167616
+      ],
+      "goal_pose": [
+        2524.3769475926742,
+        24341.94047167616,
+        0.0,
+        0.0,
+        0.0,
+        0.9643457629044425,
+        0.2646455168111651
+      ]
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 8
+    },
+    {
+      "channel": "mrm",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "mrm",
+      "kind": "route",
+      "uuid": [
+        105,
+        48,
+        210,
+        88,
+        21,
+        82,
+        193,
+        237,
+        14,
+        91,
+        112,
+        5,
+        151,
+        250,
+        3,
+        104
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2524.3769475926742,
+        24341.94047167616
+      ],
+      "goal_pose": [
+        2524.3769475926742,
+        24341.94047167616,
+        0.0,
+        0.0,
+        0.0,
+        0.9643457629044425,
+        0.2646455168111651
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791633673258621451
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 5
+    },
+    {
+      "channel": "planner",
+      "kind": "route",
+      "uuid": [
+        0,
+        65,
+        94,
+        121,
+        238,
+        129,
+        62,
+        51,
+        245,
+        198,
+        75,
+        240,
+        89,
+        146,
+        4,
+        212
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2516.184776194247,
+        24347.656471167207
+      ],
+      "goal_pose": [
+        2516.184776194247,
+        24347.656471167207,
+        0.0,
+        0.0,
+        0.0,
+        0.9341921515617596,
+        0.3567702677640199
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791633672327207902
+    },
+    {
+      "channel": "goal_echo",
+      "kind": "pose",
+      "frame_id": "map",
+      "stamp_ns": 1791633672327207902,
+      "goal": [
+        2516.184776194247,
+        24347.656471167207
+      ],
+      "goal_pose": [
+        2516.184776194247,
+        24347.656471167207,
+        0.0,
+        0.0,
+        0.0,
+        0.9341921515617596,
+        0.3567702677640199
+      ]
+    },
+    {
+      "channel": "planner",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "mrm",
+      "kind": "state",
+      "value": 2
+    },
+    {
+      "channel": "main",
+      "kind": "state",
+      "value": 4
+    },
+    {
+      "channel": "main",
+      "kind": "route",
+      "uuid": [
+        0,
+        65,
+        94,
+        121,
+        238,
+        129,
+        62,
+        51,
+        245,
+        198,
+        75,
+        240,
+        89,
+        146,
+        4,
+        212
+      ],
+      "segments": [
+        29
+      ],
+      "goal": [
+        2516.184776194247,
+        24347.656471167207
+      ],
+      "goal_pose": [
+        2516.184776194247,
+        24347.656471167207,
+        0.0,
+        0.0,
+        0.0,
+        0.9341921515617596,
+        0.3567702677640199
+      ],
+      "frame_id": "map",
+      "stamp_ns": 1791633672327207902
+    }
+  ],
+  "topic_graph": {
+    "/probe/echo_back_goal_pose": {
+      "types": [
+        "geometry_msgs/msg/PoseStamped"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ],
+      "publisher_reliability": [
+        "ReliabilityPolicy.RELIABLE"
+      ],
+      "publisher_depth": [
+        1
+      ]
+    },
+    "/probe/mission_planner/route": {
+      "types": [
+        "autoware_planning_msgs/msg/LaneletRoute"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ],
+      "publisher_reliability": [
+        "ReliabilityPolicy.RELIABLE"
+      ],
+      "publisher_depth": [
+        1
+      ]
+    },
+    "/probe/mission_planner/state": {
+      "types": [
+        "tier4_planning_msgs/msg/RouteState"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ],
+      "publisher_reliability": [
+        "ReliabilityPolicy.RELIABLE"
+      ],
+      "publisher_depth": [
+        1
+      ]
+    },
+    "/probe/route_selector/main/route": {
+      "types": [
+        "autoware_planning_msgs/msg/LaneletRoute"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ],
+      "publisher_reliability": [
+        "ReliabilityPolicy.RELIABLE"
+      ],
+      "publisher_depth": [
+        1
+      ]
+    },
+    "/probe/route_selector/main/state": {
+      "types": [
+        "tier4_planning_msgs/msg/RouteState"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ],
+      "publisher_reliability": [
+        "ReliabilityPolicy.RELIABLE"
+      ],
+      "publisher_depth": [
+        1
+      ]
+    },
+    "/probe/route_selector/mrm/route": {
+      "types": [
+        "autoware_planning_msgs/msg/LaneletRoute"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ],
+      "publisher_reliability": [
+        "ReliabilityPolicy.RELIABLE"
+      ],
+      "publisher_depth": [
+        1
+      ]
+    },
+    "/probe/route_selector/mrm/state": {
+      "types": [
+        "tier4_planning_msgs/msg/RouteState"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ],
+      "publisher_reliability": [
+        "ReliabilityPolicy.RELIABLE"
+      ],
+      "publisher_depth": [
+        1
+      ]
+    }
+  },
+  "route_services": {
+    "/probe/mission_planner/clear_route": [
+      "tier4_planning_msgs/srv/ClearRoute"
+    ],
+    "/probe/mission_planner/set_lanelet_route": [
+      "tier4_planning_msgs/srv/SetLaneletRoute"
+    ],
+    "/probe/mission_planner/set_waypoint_route": [
+      "tier4_planning_msgs/srv/SetWaypointRoute"
+    ],
+    "/probe/route_selector/main/clear_route": [
+      "tier4_planning_msgs/srv/ClearRoute"
+    ],
+    "/probe/route_selector/main/set_lanelet_route": [
+      "tier4_planning_msgs/srv/SetLaneletRoute"
+    ],
+    "/probe/route_selector/main/set_waypoint_route": [
+      "tier4_planning_msgs/srv/SetWaypointRoute"
+    ],
+    "/probe/route_selector/mrm/clear_route": [
+      "tier4_planning_msgs/srv/ClearRoute"
+    ],
+    "/probe/route_selector/mrm/set_lanelet_route": [
+      "tier4_planning_msgs/srv/SetLaneletRoute"
+    ],
+    "/probe/route_selector/mrm/set_waypoint_route": [
+      "tier4_planning_msgs/srv/SetWaypointRoute"
+    ]
+  }
+}

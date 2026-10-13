@@ -1,0 +1,20 @@
+# [build-system]
+# This section is maintained at https://github.com/cmake-wheel/proxsuite
+
+[project]
+name = "proxsuite"
+version = "0.7.3"
+description = "Quadratic Programming Solver for Robotics and beyond."
+readme = "README.md"
+requires-python = ">= 3.8"
+license = "BSD-2-Clause"
+dependencies = ["numpy","scipy"]
+
+[project.urls]
+homepage = "https://github.com/Simple-Robotics/proxsuite"
+repository = "https://github.com/Simple-Robotics/proxsuite.git"
+
+[tool.ruff.lint]
+ignore = [ "E741" ]
+extend-select = ["W605"]
+exclude = [ "cmake-module/*", "bindings/python/external/nanobind/*" ]

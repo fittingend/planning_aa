@@ -1,0 +1,45 @@
+<launch>
+  <arg name="module" default="autoware::behavior_velocity_planner::StopLineModulePlugin"/>
+  <arg name="occlusion_enable" default="false"/>
+  <arg name="crosswalk_enable_rtc" default="false"/>
+  <arg name="stuck_in_intersection" default="false"/>
+  <arg name="ttc_debug_lane" default="0"/>
+  <arg name="publish_debug_path" default="false"/>
+  <node pkg="autoware_behavior_velocity_planner" exec="autoware_behavior_velocity_planner_node"
+        name="behavior_velocity_planner" namespace="/probe" output="screen">
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/common.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/nearest_search.param.yaml"/>
+    <param from="/source/src/vehicle/sample_vehicle_launch/sample_vehicle_description/config/vehicle_info.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/autoware_velocity_smoother/velocity_smoother.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/autoware_velocity_smoother/Analytical.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/behavior_velocity_planner.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/behavior_velocity_planner_common.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/stop_line.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/traffic_light.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/crosswalk.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/walkway.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/intersection.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/detection_area.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/speed_bump.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/no_drivable_lane.param.yaml"/>
+    <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/no_stopping_area.param.yaml"/>
+    <param name="crosswalk.occlusion.enable" value="$(var occlusion_enable)"/>
+    <param name="intersection.occlusion.enable" value="$(var occlusion_enable)"/>
+    <param name="crosswalk.common.enable_rtc" value="$(var crosswalk_enable_rtc)"/>
+    <param name="crosswalk.stuck_vehicle.enable_stuck_check_in_intersection" value="$(var stuck_in_intersection)"/>
+    <param name="intersection.debug.ttc" value="[$(var ttc_debug_lane)]"/>
+    <param name="launch_modules" value="$(var module)"/>
+    <param name="enable_all_modules_auto_mode" value="false"/>
+    <param name="is_simulation" value="false"/>
+    <param name="is_publish_debug_path" value="$(var publish_debug_path)"/>
+    <remap from="~/input/path_with_lane_id" to="/probe/input_path"/>
+    <remap from="~/input/vector_map" to="/probe/map"/>
+    <remap from="~/input/vehicle_odometry" to="/probe/odometry"/>
+    <remap from="~/input/accel" to="/probe/acceleration"/>
+    <remap from="~/input/dynamic_objects" to="/probe/objects"/>
+    <remap from="~/input/no_ground_pointcloud" to="/probe/pointcloud"/>
+    <remap from="~/input/occupancy_grid" to="/probe/occupancy"/>
+    <remap from="~/input/traffic_signals" to="/probe/traffic_signals"/>
+    <remap from="~/output/path" to="/probe/output_path"/>
+  </node>
+</launch>

@@ -1,0 +1,52 @@
+{
+  "metrics_topic": "/probe/planning_evaluator/metrics",
+  "types": [
+    "tier4_metric_msgs/msg/MetricArray"
+  ],
+  "publishers": [
+    {
+      "durability": "DurabilityPolicy.VOLATILE",
+      "reliability": "ReliabilityPolicy.RELIABLE",
+      "depth": 0
+    }
+  ],
+  "message_count": 12,
+  "message_sizes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "intervals_ms": [
+    99.904819,
+    100.439092,
+    99.815188,
+    99.788669,
+    99.82444,
+    100.642955,
+    99.296662,
+    100.561729,
+    99.713159,
+    100.812583,
+    99.766964
+  ],
+  "processing_time_graph": {
+    "types": [
+      "autoware_internal_debug_msgs/msg/Float64Stamped"
+    ],
+    "publishers": [
+      {
+        "durability": "DurabilityPolicy.VOLATILE",
+        "reliability": "ReliabilityPolicy.RELIABLE"
+      }
+    ]
+  }
+}

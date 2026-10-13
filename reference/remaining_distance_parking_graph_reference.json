@@ -1,0 +1,80 @@
+{
+  "before_scenario_count": 0,
+  "lane_without_map_route_count": 0,
+  "parking_count": 12,
+  "parking_values": [
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ]
+  ],
+  "parking_intervals_ms": [
+    99.340822,
+    100.021554,
+    100.760102,
+    100.101752,
+    99.504322,
+    99.896743,
+    99.226496,
+    100.726401,
+    100.2009,
+    100.4367,
+    99.617444
+  ],
+  "graph": {
+    "types": [
+      "autoware_internal_msgs/msg/MissionRemainingDistanceTime"
+    ],
+    "publishers": [
+      {
+        "durability": "DurabilityPolicy.VOLATILE",
+        "reliability": "ReliabilityPolicy.RELIABLE",
+        "depth": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-10-06-09-19-11-749641-ROG-Zephyrus-360940
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [autoware_behavior_velocity_planner_node-1]: process started with pid [360951]
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[INFO] [autoware_behavior_velocity_planner_node-1]: sending signal 'SIGINT' to process[autoware_behavior_velocity_planner_node-1]
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791278356.313213056] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791278356.314918550] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [autoware_behavior_velocity_planner_node-1]: process has finished cleanly [pid 360951]

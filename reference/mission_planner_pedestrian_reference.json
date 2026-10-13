@@ -1,0 +1,45 @@
+{
+  "bag_timestamp": 1767155095424385093,
+  "start": {
+    "x": 2597.999113747169,
+    "y": 24094.395710029174,
+    "yaw_qz": -0.7729951862229165,
+    "yaw_qw": -0.6343728734835109
+  },
+  "goal": {
+    "x": 2586.6834259328443,
+    "y": 24126.477852167434,
+    "z": -0.2392944458477601,
+    "yaw_qz": 0.9835835933991797,
+    "yaw_qw": 0.18042754017048587
+  },
+  "goal_path_index": 50,
+  "waypoints": [],
+  "segments": [
+    {
+      "preferred": 24846,
+      "primitives": [
+        24846,
+        24847,
+        24848,
+        24849
+      ]
+    },
+    {
+      "preferred": 24739,
+      "primitives": [
+        24739
+      ]
+    },
+    {
+      "preferred": 24978,
+      "primitives": [
+        24978
+      ]
+    }
+  ],
+  "goal_height_m": -0.2393107891631524,
+  "success": true,
+  "error_code": 0,
+  "consider_no_drivable_lanes": false
+}

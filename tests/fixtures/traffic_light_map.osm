@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6">
+  <node id="1" lat="0" lon="0">
+    <tag k="local_x" v="7.0"/>
+    <tag k="local_y" v="-1.0"/>
+  </node>
+  <node id="2" lat="0" lon="0">
+    <tag k="local_x" v="7.0"/>
+    <tag k="local_y" v="0.0"/>
+  </node>
+  <node id="3" lat="0" lon="0">
+    <tag k="local_x" v="7.0"/>
+    <tag k="local_y" v="1.0"/>
+  </node>
+  <way id="10">
+    <nd ref="1"/>
+    <nd ref="2"/>
+    <nd ref="3"/>
+  </way>
+  <way id="11">
+    <nd ref="1"/>
+    <nd ref="2"/>
+    <tag k="type" v="traffic_sign"/>
+    <tag k="subtype" v="stop_sign"/>
+  </way>
+  <relation id="20">
+    <member type="way" ref="10" role="ref_line"/>
+    <tag k="type" v="regulatory_element"/>
+    <tag k="subtype" v="traffic_light"/>
+  </relation>
+  <relation id="21">
+    <member type="way" ref="10" role="ref_line"/>
+    <member type="way" ref="11" role="refers"/>
+    <tag k="type" v="regulatory_element"/>
+    <tag k="subtype" v="traffic_sign"/>
+  </relation>
+  <relation id="30">
+    <member type="relation" ref="20" role="regulatory_element"/>
+    <member type="relation" ref="21" role="regulatory_element"/>
+    <tag k="type" v="lanelet"/>
+    <tag k="turn_direction" v="right"/>
+  </relation>
+</osm>

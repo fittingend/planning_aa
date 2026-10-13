@@ -1,0 +1,37 @@
+<launch>
+  <arg name="safe_distance_margin" default="4.0"/>
+  <arg name="cruise_to_stop_velocity" default="1.0"/>
+  <arg name="stop_to_cruise_velocity" default="1.5"/>
+  <arg name="collision_time_margin" default="1.0"/>
+  <arg name="enable_outside_stop" default="false"/>
+  <arg name="outside_stop_predicted_path_count" default="1"/>
+  <node_container pkg="rclcpp_components" exec="component_container_mt"
+                  name="obstacle_cruise_probe_container" namespace="/probe">
+    <composable_node pkg="autoware_obstacle_cruise_planner"
+                     plugin="autoware::motion_planning::ObstacleCruisePlannerNode"
+                     name="obstacle_cruise_planner" namespace="/probe">
+      <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/common.param.yaml"/>
+      <param from="/source/src/vehicle/sample_vehicle_launch/sample_vehicle_description/config/vehicle_info.param.yaml"/>
+      <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/common/nearest_search.param.yaml"/>
+      <param from="/source/src/universe/autoware.universe/obigo_launch/config/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/obstacle_cruise_planner.param.yaml"/>
+      <param name="common.safe_distance_margin" value="$(var safe_distance_margin)"/>
+      <param name="behavior_determination.obstacle_velocity_threshold_from_cruise_to_stop" value="$(var cruise_to_stop_velocity)"/>
+      <param name="behavior_determination.obstacle_velocity_threshold_from_stop_to_cruise" value="$(var stop_to_cruise_velocity)"/>
+      <param name="behavior_determination.stop.crossing_obstacle.collision_time_margin" value="$(var collision_time_margin)"/>
+      <param name="common.stop_obstacle_type.outside.car" value="$(var enable_outside_stop)"/>
+      <param name="common.stop_obstacle_type.outside.truck" value="$(var enable_outside_stop)"/>
+      <param name="common.stop_obstacle_type.outside.bus" value="$(var enable_outside_stop)"/>
+      <param name="common.stop_obstacle_type.outside.trailer" value="$(var enable_outside_stop)"/>
+      <param name="common.stop_obstacle_type.outside.motorcycle" value="$(var enable_outside_stop)"/>
+      <param name="common.stop_obstacle_type.outside.bicycle" value="$(var enable_outside_stop)"/>
+      <param name="common.stop_obstacle_type.outside.pedestrian" value="$(var enable_outside_stop)"/>
+      <param name="behavior_determination.stop.outside_obstacle.num_of_predicted_paths" value="$(var outside_stop_predicted_path_count)"/>
+      <param name="use_sim_time" value="true"/>
+      <remap from="~/input/trajectory" to="/probe/trajectory"/>
+      <remap from="~/input/odometry" to="/probe/odometry"/>
+      <remap from="~/input/acceleration" to="/probe/acceleration"/>
+      <remap from="~/input/objects" to="/probe/objects"/>
+      <remap from="~/output/trajectory" to="/probe/output"/>
+    </composable_node>
+  </node_container>
+</launch>

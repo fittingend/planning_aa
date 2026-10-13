@@ -1,0 +1,167 @@
+{
+  "input": {
+    "ego": [
+      2597.5917367169923,
+      24264.434861383168,
+      -4.623510780037218
+    ],
+    "goal": [
+      2597.1479305497455,
+      24269.415126043397,
+      -4.623510780037218
+    ],
+    "grid": [
+      233,
+      233,
+      0.30000001192092896
+    ],
+    "scenario": "PARKING synthetic",
+    "grid_reference": "/probe/reference/costmap_generator_reference_scurve_synthetic.json.gz",
+    "adapt_expansion_distance": false,
+    "obstacle": null
+  },
+  "output": {
+    "trajectory_count": 1,
+    "path_points": 11,
+    "frame_id": "map",
+    "first": [
+      2597.5917367169923,
+      24264.434861383168,
+      1.3888888359069824
+    ],
+    "last": [
+      2597.1480936315093,
+      24269.415140582827,
+      0.0
+    ],
+    "points": [
+      [
+        2597.5917367169923,
+        24264.434861383168,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.547376490216,
+        24264.93288966578,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.50301626344,
+        24265.43091794839,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.4586560366633,
+        24265.928946231,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.414295809887,
+        24266.42697451361,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.369935583111,
+        24266.925002796223,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.3255753563344,
+        24267.423031078833,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.281215129558,
+        24267.921059361444,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.236854902782,
+        24268.419087644055,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.1924946760055,
+        24268.917115926666,
+        0.7378077166689915,
+        0.6750109430399548,
+        1.3888888359069824
+      ],
+      [
+        2597.1480936315093,
+        24269.415140582827,
+        0.737798834708001,
+        0.6749750725808302,
+        0.0
+      ]
+    ],
+    "completed_history": [
+      false,
+      false
+    ],
+    "full_path_poses": []
+  },
+  "graph": {
+    "/probe/freespace_planner/debug/partial_pose_array": {
+      "types": [
+        "geometry_msgs/msg/PoseArray"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    },
+    "/probe/freespace_planner/debug/pose_array": {
+      "types": [
+        "geometry_msgs/msg/PoseArray"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    },
+    "/probe/freespace_planner/debug/processing_time_ms": {
+      "types": [
+        "autoware_internal_debug_msgs/msg/Float64Stamped"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.VOLATILE"
+      ]
+    },
+    "/probe/is_completed": {
+      "types": [
+        "std_msgs/msg/Bool"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    },
+    "/probe/trajectory": {
+      "types": [
+        "autoware_planning_msgs/msg/Trajectory"
+      ],
+      "publisher_durability": [
+        "DurabilityPolicy.TRANSIENT_LOCAL"
+      ]
+    }
+  },
+  "observation": {
+    "trajectory_intervals_ms": []
+  }
+}

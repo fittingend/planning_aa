@@ -1,0 +1,21 @@
+{
+  "bag_timestamp": 1767154853070492236,
+  "scenario": "LaneDriving",
+  "ego": {
+    "x": 2585.016995171108,
+    "y": 23942.35769895078,
+    "velocity": 0.0
+  },
+  "input_points": 216,
+  "fresh_published": 2,
+  "stale_published": 0,
+  "output_points": 216,
+  "synthetic_parking": {
+    "initial_scenario": "Parking",
+    "completed_scenario": "LaneDriving",
+    "parking_path_published": 1,
+    "parking_lot_map": "kcity_parking_lot_synthetic.bin",
+    "goal_x": 0.0,
+    "goal_y": 0.0
+  }
+}

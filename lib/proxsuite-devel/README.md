@@ -1,0 +1,233 @@
+# ProxSuite
+
+<p align="center">
+  <img src="https://github.com/Simple-Robotics/proxsuite/raw/devel/doc/images/proxsuite-logo.png" width="700" alt="Proxsuite Logo" align="center"/>
+</p>
+
+<p align="center">
+  <a href="https://opensource.org/licenses/BSD-2-Clause"><img src="https://img.shields.io/badge/License-BSD%202--Clause-green.svg" alt="License"/></a>
+  <a href="https://simple-robotics.github.io/proxsuite/"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
+  <a href="https://github.com/Simple-Robotics/proxsuite/actions/workflows/ci-linux-osx-win-conda.yml"><img src="https://github.com/Simple-Robotics/proxsuite/actions/workflows/ci-linux-osx-win-conda.yml/badge.svg?branch=devel" alt="CI - Linux/OSX/Windows - Conda"></a>
+  <a href="https://badge.fury.io/py/proxsuite"><img src="https://badge.fury.io/py/proxsuite.svg" alt="PyPI version" height="20"></a>
+  <a href="https://anaconda.org/conda-forge/proxsuite"><img src="https://anaconda.org/conda-forge/proxsuite/badges/version.svg" alt="Conda version" height="20"></a>
+</p>
+
+**ProxSuite** is a collection of open-source, numerically robust, precise, and efficient numerical solvers (e.g., LPs, QPs, etc.) rooted in revisited primal-dual proximal algorithms.
+Through **ProxSuite**, we aim to offer the community scalable optimizers that deal with dense, sparse, or matrix-free problems. While the first targeted application is Robotics, **ProxSuite** can be used in other contexts without limits.
+
+**ProxSuite** is actively developed and supported by the [Willow](https://www.di.ens.fr/willow/) and [Sierra](https://www.di.ens.fr/sierra/) research groups, joint research teams between [Inria](https://www.inria.fr/en), [École Normale Supérieure de Paris](https://www.ens.fr) and [Centre National de la Recherche Scientifique](https://www.cnrs.fr) localized in France.
+
+**ProxSuite** is already integrated into:
+- [CVXPY](https://www.cvxpy.org/) modeling language for convex optimization problems,
+- [CasADi](https://web.casadi.org/)'s symbolic framework for numerical optimization in general and optimal control. ProxQP is available in CasADi as a plugin to [solve quadratic programs](https://web.casadi.org/docs/#quadratic-programming),
+- [TSID](https://github.com/stack-of-tasks/tsid): robotic software for efficient robot inverse dynamics with contacts and based on [Pinocchio](https://github.com/stack-of-tasks/pinocchio).
+
+We are ready to integrate **ProxSuite** within other optimization ecosystems.
+
+## Table of contents
+- [ProxSuite](#proxsuite)
+   * [ProxSuite main features](#proxsuite-main-features)
+   * [Documentation](#documentation)
+   * [Getting started](#getting-started)
+      + [Quick install with <img src="https://www.python.org/static/community_logos/python-logo-inkscape.svg" height="30" style="vertical-align: -1em;">:](#quick-install-with-)
+      + [Quick install with <img src="https://s3.amazonaws.com/conda-dev/conda_logo.svg" height="18">:](#quick-install-with--1)
+      + [Quick install with <img src="https://brew.sh/assets/img/homebrew-256x256.png" height="30">:](#quick-install-with--2)
+      + [Alternative approaches](#alternative-approaches)
+      + [Compiling a first example program](#compiling-a-first-example-program)
+      + [Using ProxSuite with CMake](#using-proxsuite-with-cmake)
+   * [**ProxQP**](#proxqp)
+      + [Citing **ProxQP**](#citing-proxqp)
+      + [Numerical benchmarks](#numerical-benchmarks)
+   * [**QPLayer**](#qplayer)
+      + [Citing **QPLayer**](#citing-qplayer)
+   * [Installation procedure](#installation-procedure)
+   * [Contribution](#contribution)
+   * [Core-dev team](#core-dev-team)
+   * [Credits](#credits)
+
+
+## ProxSuite main features
+
+**Proxsuite** is fast:
+
+   - C++ template library,
+   - cache-friendly.
+
+**Proxsuite** is versatile, offering through a unified API advanced algorithms specialized for efficiently exploiting problem structures:
+
+   - dense, sparse, and matrix-free matrix factorization backends,
+   - advanced warm-starting options (e.g., equality-constrained initial guess, warm-start or cold-start options from previous results),
+
+
+with dedicated features for
+   - handling more efficiently box constraints, linear programs, QP with diagonal Hessian, or with far more constraints than primal variables,
+   - solving nonconvex QPs,
+   - solving batches of QPs in parallel,
+   - solving the closest feasible QP if the QP appears to be primal infeasible,
+   - differentiating feasible and infeasible QPs.
+
+**Proxsuite** is flexible:
+
+   - header only,
+   - C++ 14/17/20 compliant,
+   - Python and Julia bindings for easy code prototyping without sacrificing performance.
+
+**Proxsuite** is extensible.
+**Proxsuite** is reliable and extensively tested, showing the best performances on the hardest problems of the literature.
+**Proxsuite** is supported and tested on Windows, Mac OS X, Unix, and Linux.
+
+## Documentation
+
+The online **ProxSuite** documentation of the last release is available [here](https://simple-robotics.github.io/proxsuite/).
+
+## Getting started
+
+**ProxSuite** is distributed to many well-known package managers.
+
+### Quick install with <img src="https://www.python.org/static/community_logos/python-logo-inkscape.svg" height="30" style="vertical-align: -1em;">:
+
+```bash
+   pip install proxsuite
+```
+This approach is available on Linux, Windows and Mac OS X.
+
+### Quick install with <img src="https://s3.amazonaws.com/conda-dev/conda_logo.svg" height="18">:
+
+```bash
+   conda install proxsuite -c conda-forge
+```
+This approach is available on Linux, Windows and Mac OS X.
+
+### Quick install with <img src="https://brew.sh/assets/img/homebrew-256x256.png" height="30">:
+
+```bash
+   brew install proxsuite
+```
+This approach is available on Linux and Mac OS X.
+
+### Alternative approaches
+
+Installation from source is presented [here](https://github.com/Simple-Robotics/proxsuite/blob/devel/doc/5-installation.md).
+
+### Compiling a first example program
+For the fastest performance, use the following command to enable vectorization when compiling the simple [example](https://github.com/Simple-Robotics/proxsuite/blob/devel/examples/cpp/first_example_dense.cpp).
+```bash
+g++ -O3 -march=native -DNDEBUG -std=gnu++17 -DPROXSUITE_VECTORIZE examples/first_example_dense.cpp -o first_example_dense $(pkg-config --cflags proxsuite)
+```
+### Using ProxSuite with CMake
+If you want to use ProxSuite with CMake, the following tiny example should help you:
+```cmake
+cmake_minimum_required(VERSION 3.10)
+
+project(Example CXX)
+find_package(proxsuite REQUIRED)
+set(CMAKE_CXX_STANDARD 17) # set(CMAKE_CXX_STANDARD 14) will work too
+
+add_executable(example example.cpp)
+target_link_libraries(example PUBLIC proxsuite::proxsuite)
+
+# Vectorization support via SIMDE and activated by the compilation options '-march=native' or `-mavx2 -mavx512f`
+add_executable(example_with_full_vectorization_support example.cpp)
+target_link_libraries(example_with_full_vectorization_support PUBLIC proxsuite::proxsuite-vectorized)
+target_compile_options(example_with_full_vectorization_support PUBLIC "-march=native")
+```
+If you have compiled ProxSuite with the vectorization support, you might also use the CMake target `proxsuite::proxsuite-vectorized` to also link against SIMDE.
+Don't forget to use `-march=native` to get the best performance.
+
+## **ProxQP**
+
+The **ProxQP** algorithm is a numerical optimization approach for solving quadratic programming problems of the form:
+
+$$
+\begin{align}
+\min_{x} &  ~\frac{1}{2}x^{T}Hx+g^{T}x \\
+\text{s.t.} & ~A x = b \\
+& ~l \leq C x \leq u
+\end{align}
+$$
+
+where $x \in \mathbb{R}^n$ is the optimization variable. The objective function is defined by a positive semidefinite matrix $H \in \mathcal{S}^n_+$ and a vector $g \in \mathbb{R}^n$. The linear constraints are defined by the equality-contraint matrix $A \in \mathbb{R}^{n_\text{eq} \times n}$ and the inequality-constraint matrix $C \in \mathbb{R}^{n_\text{in} \times n}$ and the vectors $b \in \mathbb{R}^{n_\text{eq}}$, $l \in \mathbb{R}^{n_\text{in}}$ and $u \in \mathbb{R}^{n_\text{in}}$ so that $b_i \in \mathbb{R},~ \forall i = 1,...,n_\text{eq}$ and $l_i \in \mathbb{R} \cup \{ -\infty \}$ and $u_i \in \mathbb{R} \cup \{ +\infty \}, ~\forall i = 1,...,n_\text{in}$.
+
+### Citing **ProxQP**
+
+If you are using **ProxQP** for your work, we encourage you to [cite the related paper](https://hal.inria.fr/hal-03683733/file/Yet_another_QP_solver_for_robotics_and_beyond.pdf/).
+### Numerical benchmarks
+
+The numerical benchmarks of **ProxQP** against other commercial and open-source solvers are available [here](https://github.com/Simple-Robotics/proxqp_benchmark).
+
+For dense Convex Quadratic Programs with inequality and equality constraints, when asking for relatively high accuracy (e.g., 1e-6), one obtains the following results.
+
+<p align="center">
+  <img src="https://github.com/Simple-Robotics/proxsuite/raw/devel/doc/images/time_series_barplot_Random Mixed QP_dense_eps_abs_1e-6.jpg" width="600" alt="Random Mixed QP_dense_eps_abs_1e-6" align="center"/>
+</p>
+
+On the y-axis, you can see timings in seconds, and on the x-axis dimension wrt to the primal variable of the random Quadratic problems generated (the number of constraints of the generated problem is half the size of its primal dimension). For every dimension, the problem is generated over different seeds, and timings are obtained as averages over successive runs for the same problems. This chart shows for every benchmarked solver and random Quadratic program generated, barplot timings, including median (as a dot) and minimal and maximal values obtained (defining the amplitude of the bar). You can see that **ProxQP** is always below over solvers, which means it is the quickest for this test.
+
+For hard problems from the [Maros Meszaros testset](http://www.cuter.rl.ac.uk/Problems/marmes.shtml), when asking for high accuracy (e.g., 1e-9), one obtains the results below.
+
+<p align="center">
+  <img src="https://github.com/Simple-Robotics/proxsuite/raw/devel/doc/images/performance_profile_maros_meszaros_problems_high_accuracy.jpg" width="600" alt="maros_meszaros_problems_high_accuracy" align="center"/>
+</p>
+
+The chart above reports the performance profiles of different solvers. It is classic for benchmarking solvers. Performance profiles correspond to the fraction of problems solved (on the y-axis) as a function of certain runtime (on the x-axis, measured in terms of a multiple of the runtime of the fastest solver for that problem). So the higher, the better. You can see that **ProxQP** solves the quickest over 60% of the problems (i.e., for $\tau=1$) and that for solving about 90% of the problems, it is at most 2 times slower than the fastest solvers solving these problems (i.e., for $\tau\approx2$).
+
+*Note: All these results have been obtained with a 11th Gen Intel(R) Core(TM) i7-11850H @ 2.50GHz CPU.*
+## **QPLayer**
+
+**QPLayer** enables to use a QP as a layer within standard learning architectures. More precisely, QPLayer differentiates over $\theta$ the primal and dual solutions of QP of the form
+
+$$
+\begin{align}
+\min_{x} &  ~\frac{1}{2}x^{T}H(\theta)x+g(\theta)^{T}x \\
+\text{s.t.} & ~A(\theta) x = b(\theta) \\
+& ~l(\theta) \leq C(\theta) x \leq u(\theta)
+\end{align}
+$$
+
+where $x \in \mathbb{R}^n$ is the optimization variable. The objective function is defined by a positive semidefinite matrix $H(\theta) \in \mathcal{S}^n_+$ and a vector $g(\theta) \in \mathbb{R}^n$. The linear constraints are defined by the equality-constraint matrix $A(\theta) \in \mathbb{R}^{n_\text{eq} \times n}$ and the inequality-constraint matrix $C(\theta) \in \mathbb{R}^{n_\text{in} \times n}$ and the vectors $b \in \mathbb{R}^{n_\text{eq}}$, $l(\theta) \in \mathbb{R}^{n_\text{in}}$ and $u(\theta) \in \mathbb{R}^{n_\text{in}}$ so that $b_i \in \mathbb{R},~ \forall i = 1,...,n_\text{eq}$ and $l_i \in \mathbb{R} \cup \{ -\infty \}$ and $u_i \in \mathbb{R} \cup \{ +\infty \}, ~\forall i = 1,...,n_\text{in}$.
+
+**QPLayer** is able to learn more structured architectures. For example, $\theta$ can consists only in learning some elements of $A$ while letting $b$ fixed (see e.g., the [example](https://github.com/Simple-Robotics/proxsuite/blob/devel/examples/python/qplayer_sudoku.py) about how to include QPLayer into a learning pipeline). **QPLayer** can also differentiates over LPs. **QPLayer** allows for parallelized calculus over CPUs, and is interfaced with **PyTorch**.
+### Citing **QPLayer**
+
+If you are using **QPLayer** for your work, we encourage you to [cite the related paper](https://inria.hal.science/hal-04133055v2/).
+## Installation procedure
+
+Please follow the installation procedure [here](https://github.com/Simple-Robotics/proxsuite/blob/devel/doc/5-installation.md).
+
+## Contribution
+
+If you want to ask a question, report a bug, request a new feature or contributing with a pull requests please, follow the [contribution guideline](./CONTRIBUTING.md).
+
+## Core-dev team
+
+The currently active core developers of **ProxSuite** are:
+
+* [Justin Carpentier](https://jcarpent.github.io) (Inria): main developer and manager of the project
+* [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS): core maintainer
+* [Joris Vailant](https://github.com/jorisv) (Inria): core developer and manager of the project
+* [Lucas Haubert](https://www.linkedin.com/in/lucas-haubert-b668a421a/) (Inria): core developer
+* [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
+* Sarah Kazdadi (Inria): core developer
+* [Jeanne Matheron](https://github.com/j-matheron) (Inria): core developer
+
+## Credits
+
+In addition to the core dev team, the following people have also been involved in the development of **ProxSuite** and are warmly thanked for their contributions:
+
+* [Antoine Bambade](https://bambade.github.io/) (Inria): main contributor of the dense solver and of **QPLayer**
+* [Wilson Jallet](https://manifoldfr.github.io/) (Inria): main contributor of the matrix-free solver and of the Julia bindings
+* [Stéphane Caron](https://scaron.info/) (Inria): for his early advices on proximal methods and his contributions to **ProxQP**
+* [Wolfgang Merkt](https://wxm.io/): for his advice on packaging and his contributions to the CI
+* [Quentin Le Lidec](https://quentinll.github.io/) (Inria): for his help on benchmarks
+* [Louis Montaut](https://github.com/lmontaut) (Inria): for his contributions to the documentation
+* [Adrien Escande](https://github.com/aescande) (Inria): for his contributions to the internal linear algebra utilities
+* Oumayma Bounou (Inria): for her contributions to the PyTorch interface of **QPLayer**
+* [Antoine Hoarau](https://github.com/ahoarau): for various contributions
+* [Joris Gillis](https://github.com/jgillis) (KU Leuven): for various contributions
+* Michael Fennel (KIT): for various contributions
+* Johannes Keustermans (Spectricity): for various contributions
+* J Berg: for various contributions
+* [Konstantinos Chatzilygeroudis](https://github.com/costashatz): for various contributions
+* [Daniel Morton](https://github.com/danielpmorton): for various contributions
+* [Daisuke Nishimatsu](https://github.com/wep21): for various contributions
+* Aaron Miller: for various contributions

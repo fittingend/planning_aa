@@ -1,0 +1,64 @@
+{
+  "bag_timestamp": 1767147813910822845,
+  "start": {
+    "x": 2589.5843983406376,
+    "y": 24294.714532038524,
+    "yaw_qz": -0.8651199194157261,
+    "yaw_qw": -0.5015012877184439
+  },
+  "goal": {
+    "x": 2516.184776194247,
+    "y": 24347.656471167207,
+    "z": 0.0,
+    "yaw_qz": 0.9341921515617596,
+    "yaw_qw": 0.3567702677640199
+  },
+  "goal_path_index": 50,
+  "waypoints": [],
+  "segments": [
+    {
+      "preferred": 29,
+      "primitives": [
+        29
+      ]
+    }
+  ],
+  "goal_height_m": 0.0,
+  "success": true,
+  "error_code": 0,
+  "consider_no_drivable_lanes": false,
+  "lifecycle": {
+    "state_after_set": [
+      2,
+      3,
+      4
+    ],
+    "route_count_after_set": 1,
+    "clear": {
+      "success": true,
+      "error_code": 0,
+      "states": [
+        2,
+        3,
+        4,
+        5,
+        4,
+        2
+      ],
+      "route_count": 1
+    }
+  },
+  "rejected_after_set": {
+    "success": false,
+    "error_code": 3,
+    "states": [
+      2,
+      3,
+      4,
+      5,
+      4
+    ],
+    "route_count": 1,
+    "route_goal_x": 2516.184776194247
+  }
+}

@@ -1,0 +1,272 @@
+[
+  {
+    "case": "valid_before",
+    "invalid_count": 0,
+    "diagnostics": [
+      {
+        "name": "planning_validator: trajectory_validation_size",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_finite",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_interval",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_relative_angle",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_curvature",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_lateral_acceleration",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_acceleration",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_deceleration",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_steering",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_steering_rate",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_velocity_deviation",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_distance_deviation",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_longitudinal_distance_deviation",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_forward_trajectory_length",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      }
+    ]
+  },
+  {
+    "case": "invalid_size",
+    "invalid_count": 1,
+    "diagnostics": [
+      {
+        "name": "planning_validator: trajectory_validation_size",
+        "level": 2,
+        "message": "invalid trajectory size is found",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_finite",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_interval",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_relative_angle",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_curvature",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_lateral_acceleration",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_acceleration",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_deceleration",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_steering",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_steering_rate",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_velocity_deviation",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_distance_deviation",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_longitudinal_distance_deviation",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_forward_trajectory_length",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      }
+    ]
+  },
+  {
+    "case": "valid_after",
+    "invalid_count": 0,
+    "diagnostics": [
+      {
+        "name": "planning_validator: trajectory_validation_size",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_finite",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_interval",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_relative_angle",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_curvature",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_lateral_acceleration",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_acceleration",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_deceleration",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_steering",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_steering_rate",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_velocity_deviation",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_distance_deviation",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_longitudinal_distance_deviation",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      },
+      {
+        "name": "planning_validator: trajectory_validation_forward_trajectory_length",
+        "level": 0,
+        "message": "validated.",
+        "hardware_id": "planning_validator"
+      }
+    ]
+  }
+]

@@ -1,0 +1,136 @@
+{
+  "metrics_topic": "/probe/planning_evaluator/metrics",
+  "types": [
+    "tier4_metric_msgs/msg/MetricArray"
+  ],
+  "publishers": [
+    {
+      "durability": "DurabilityPolicy.VOLATILE",
+      "reliability": "ReliabilityPolicy.RELIABLE",
+      "depth": 1
+    }
+  ],
+  "message_count": 12,
+  "message_sizes": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+  ],
+  "synthetic_trajectory": false,
+  "first_nonempty_metrics": [
+    [
+      "ego_lane_info/lane_id",
+      "29"
+    ],
+    [
+      "ego_lane_info/s",
+      "5.417654"
+    ],
+    [
+      "ego_lane_info/t",
+      "-2.843995"
+    ]
+  ],
+  "first_two_nonempty_metrics": [
+    [
+      [
+        "ego_lane_info/lane_id",
+        "29"
+      ],
+      [
+        "ego_lane_info/s",
+        "5.417654"
+      ],
+      [
+        "ego_lane_info/t",
+        "-2.843995"
+      ]
+    ],
+    [
+      [
+        "ego_lane_info/lane_id",
+        "29"
+      ],
+      [
+        "ego_lane_info/s",
+        "5.417654"
+      ],
+      [
+        "ego_lane_info/t",
+        "-2.843995"
+      ]
+    ]
+  ],
+  "second_shift_y": 0.0,
+  "first_shifted_metrics": [],
+  "synthetic_acceleration": false,
+  "first_kinematic_metrics": [],
+  "synthetic_modified_goal": false,
+  "first_modified_goal_metrics": [],
+  "synthetic_object_x": null,
+  "first_obstacle_metrics": [],
+  "bag": "/bag.db3",
+  "bag_ego_xy": [
+    2600.5917367169923,
+    24264.434861383168
+  ],
+  "bag_ego_offset_xy": [
+    3.0,
+    0.0
+  ],
+  "bag_route_primitive_ids": [
+    [
+      29
+    ],
+    [
+      18753
+    ]
+  ],
+  "first_lane_metrics": [
+    [
+      "ego_lane_info/lane_id",
+      "29"
+    ],
+    [
+      "ego_lane_info/s",
+      "5.417654"
+    ],
+    [
+      "ego_lane_info/t",
+      "-2.843995"
+    ]
+  ],
+  "intervals_ms": [
+    103.400761,
+    100.128293,
+    100.176915,
+    99.828597,
+    96.920005,
+    100.447536,
+    100.548291,
+    103.042836,
+    96.90395,
+    109.29144,
+    99.398142
+  ],
+  "processing_time_graph": {
+    "types": [
+      "autoware_internal_debug_msgs/msg/Float64Stamped"
+    ],
+    "publishers": [
+      {
+        "durability": "DurabilityPolicy.VOLATILE",
+        "reliability": "ReliabilityPolicy.RELIABLE"
+      }
+    ]
+  }
+}

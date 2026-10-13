@@ -1,0 +1,42 @@
+[
+  {
+    "frame": 240,
+    "record_stamp_ns": 1767155101459172779,
+    "stop_debug": [
+      -0.1117958128452301,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cruise_debug": [
+      5.0,
+      -0.1117958128452301,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "debug_stamp_ns": 1767155101464172779,
+    "output_trajectory_count": 101,
+    "markers": {
+      "counts": {
+        "detection_polygons": 1
+      },
+      "leading": [],
+      "detection_points": null
+    }
+  }
+]

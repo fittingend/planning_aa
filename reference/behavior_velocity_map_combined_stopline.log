@@ -1,0 +1,48 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-10-06-08-34-26-905765-ROG-Zephyrus-315802
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [autoware_behavior_velocity_planner_node-1]: process started with pid [315833]
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275669.978344075] [probe.behavior_velocity_planner.traffic_light_module]: the traffic signal data associated with regulatory element id 25004 is not received
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275670.285120603] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [isActivated] uuid : 83284d0b0caa7d630c70c4768577b252 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275670.285142784] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [isRTCEnabled] uuid : 83284d0b0caa7d630c70c4768577b252 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275670.287701156] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [updateCooperateStatus]  Cannot register RUNNING as initial state
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275670.591575215] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [isActivated] uuid : 83284d0b0caa7d630c70c4768577b252 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275670.591594418] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [isRTCEnabled] uuid : 83284d0b0caa7d630c70c4768577b252 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275670.594274452] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [updateCooperateStatus]  Cannot register RUNNING as initial state
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275670.901020371] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [isActivated] uuid : 83284d0b0caa7d630c70c4768577b252 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275670.901039929] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [isRTCEnabled] uuid : 83284d0b0caa7d630c70c4768577b252 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275670.903913584] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [updateCooperateStatus]  Cannot register RUNNING as initial state
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'x'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'y'.
+[autoware_behavior_velocity_planner_node-1] Failed to find match for field 'z'.
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275671.207878695] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [isActivated] uuid : 83284d0b0caa7d630c70c4768577b252 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275671.207899193] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [isRTCEnabled] uuid : 83284d0b0caa7d630c70c4768577b252 is not found.
+[autoware_behavior_velocity_planner_node-1] 
+[autoware_behavior_velocity_planner_node-1] [WARN] [1791275671.210501694] [probe.behavior_velocity_planner.RTCInterface[traffic_light]]: [updateCooperateStatus]  Cannot register RUNNING as initial state
+[autoware_behavior_velocity_planner_node-1] 
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[INFO] [autoware_behavior_velocity_planner_node-1]: sending signal 'SIGINT' to process[autoware_behavior_velocity_planner_node-1]
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791275671.371894914] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[autoware_behavior_velocity_planner_node-1] [INFO] [1791275671.375108863] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [autoware_behavior_velocity_planner_node-1]: process has finished cleanly [pid 315833]

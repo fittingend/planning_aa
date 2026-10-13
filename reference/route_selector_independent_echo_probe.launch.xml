@@ -1,0 +1,23 @@
+<launch>
+  <node_container pkg="rclcpp_components" exec="component_container_mt"
+                  name="route_selector_probe_container" namespace="/probe">
+    <composable_node pkg="autoware_mission_planner_universe"
+                     plugin="autoware::mission_planner_universe::MissionPlanner"
+                     name="mission_planner" namespace="/probe">
+      <param from="/source/src/universe/autoware.universe/planning/autoware_mission_planner_universe/config/mission_planner.param.yaml"/>
+      <param from="/source/src/vehicle/sample_vehicle_launch/sample_vehicle_description/config/vehicle_info.param.yaml"/>
+      <remap from="~/input/vector_map" to="/probe/map"/>
+      <remap from="~/input/odometry" to="/probe/odometry"/>
+      <remap from="~/input/operation_mode_state" to="/probe/operation_mode"/>
+    </composable_node>
+    <composable_node pkg="autoware_mission_planner_universe"
+                     plugin="autoware::mission_planner_universe::RouteSelector"
+                     name="route_selector" namespace="/probe">
+      <remap from="~/planner/clear_route" to="/probe/mission_planner/clear_route"/>
+      <remap from="~/planner/set_waypoint_route" to="/probe/mission_planner/set_waypoint_route"/>
+      <remap from="~/planner/set_lanelet_route" to="/probe/mission_planner/set_lanelet_route"/>
+      <remap from="~/planner/state" to="/probe/mission_planner/state"/>
+      <remap from="~/planner/route" to="/probe/mission_planner/route"/>
+    </composable_node>
+  </node_container>
+</launch>

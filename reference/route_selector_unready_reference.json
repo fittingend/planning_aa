@@ -1,0 +1,20 @@
+[
+  {
+    "service": "main/set_waypoint_route",
+    "success": false,
+    "code": 50001,
+    "message": "/probe/missing_planner/set_waypoint_route"
+  },
+  {
+    "service": "mrm/set_waypoint_route",
+    "success": false,
+    "code": 50001,
+    "message": "/probe/missing_planner/set_waypoint_route"
+  },
+  {
+    "service": "mrm/clear_route",
+    "success": false,
+    "code": 50001,
+    "message": "/probe/missing_planner/set_waypoint_route"
+  }
+]
