@@ -1,0 +1,44 @@
+{
+    "generation-by" : "PARA, PopcornSAR",
+    "autosar-version" : "R20-11",
+    "manifest-type" : "service-instance-to-machine-manifest",
+    "service-protocol" : "someip",
+    "connector" : "enP4p3s0",
+    "unicast-address" : "192.168.100.92",
+    "tcp-port" : "1817",
+    "udp-port" : "1817",
+    "skeletons" : [
+        {
+            "service-id" : "1817",
+            "instance-id" : "1",
+            "major-version" : "41",
+            "minor-version" : "2",
+            "load-balancing-priority" : "undefined",
+            "load-balancing-weight" : "undefined",
+            "configuration-options" : [
+            ],
+            "sd-server-timing" : {
+                "initial-delay-min" : "0.1",
+                "initial-delay-max" : "0.2",
+                "repetition-base" : "0.1",
+                "repetition-max" : "3",
+                "offer-cyclic" : "0.5",
+                "ttl" : "16777215",
+                "req-resp-delay-min" : "0.0",
+                "req-resp-delay-max" : "0.0"
+            },
+            "eventgroups" : [
+            ],
+            "e2e-event-protection-props" : [
+            ],
+            "e2e-method-protection-props" : [
+            ]
+        }
+    ],
+    "proxies" : [
+    ],
+    "secure-com-props-for-tcp" : [
+    ],
+    "secure-com-props-for-udp" : [
+    ]
+}

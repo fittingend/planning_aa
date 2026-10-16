@@ -15,7 +15,7 @@
   },
   "resource-group": {"cpu-usage": "undefined", "mem-usage": "undefined"},
   "state-dependencies": [{"function-group": "MachineFG", "state": "Startup"}],
-  "execution-dependencies": [],
+  "execution-dependencies": [{"dependent-process": "CM", "state": "Running"}],
   "log-trace-configuration": {
     "default-log-level": "info", "log-modes": ["console"],
     "application-id": "PLAA", "application-description": "Planning AA bootstrap",

@@ -1,0 +1,97 @@
+# PlanningAA Adaptive 실행 구성
+
+이 디렉터리는 `planning_core`를 PopcornSAR PARA R20-11 기반 Adaptive AUTOSAR 앱으로 빌드하고, `oss-ap-planning-bridge` 복사본의 Service Creator와 별도 컨테이너에서 실행하기 위한 파일을 담는다. PlanningAA 빌드에 필요한 SDK와 생성 파일은 `vendor/`에 로컬 복사되어 있다. 원본 `oss-ap` 저장소는 수정하지 않는다.
+
+## 현재 인터페이스
+
+| PlanningAA 포트 | 방향 | SOME/IP 서비스 | 내용 |
+| --- | --- | --- | --- |
+| `RPort_SCr2MP` | `oss-ap` → PlanningAA | 4308 | clock, localization, 지도, perception, 속도 제한, 운영 모드 등 입력 Event 11개 |
+| `PPort_MP2SCr` | PlanningAA ↔ `oss-ap` | 1817 | clear route 10801, set lanelet route 10809, set waypoint route 10812 |
+| `PPort_MP2RS` | PlanningAA → `oss-ap` | 1814 | 경로 상태 Event 10604 (`route_selector/main/state`) |
+| `PPort_PV2SCr` | PlanningAA → `oss-ap` | 2317 | **최종 궤적 Event 12506 하나** |
+
+`PlanningAA`는 `map_vectormap`의 `LaneletMapBin.data`를 Lanelet 어댑터로 해독한다. 지도, route, odometry와 운영 모드가 준비되면 새 odometry마다 route 기반 주행 경로를 만들고, 인식 객체·교통 신호·가속도·속도 제한을 반영해 `PlanningFinalFrame`을 조립한다. 최종 파이프라인의 검증을 통과한 궤적만 Event 12506으로 변환해 `Send()`한다. `Planning services active`는 통신 준비 상태이며, 실제 송신은 `Published final trajectory Event 12506` 로그로 확인한다. 지도와 odometry의 `frame_id`가 일치해야 한다. Lanelet route 요청의 segment를 사용하고, waypoint route 요청은 해독한 지도에서 경로를 탐색한다. 자세한 상태는 [저장소 README](../README.md#adaptive-autosar-컨테이너와-oss-ap-브리지)를 참고한다.
+
+실행 매니페스트는 `CM=Running`을 `PlanningAA`의 시작 조건으로 둔다. CM이 초기화되기 전에 `OfferService()`를 호출하면 서비스 제공이 실패할 수 있다.
+
+## 필요한 것
+
+- Linux x86_64, Docker Buildx. 로컬 CMake 빌드에는 CMake, Ninja, C++17 컴파일러, Eigen 3, Boost 헤더·serialization 라이브러리가 필요하다. 이미지 빌드는 호스트의 `/usr/lib/x86_64-linux-gnu/libboost_serialization.so.1.74.0`을 사용하며 `BOOST_SERIALIZATION_LIBRARY`로 경로를 바꿀 수 있다.
+- PARA SDK `R20-11_v26.04.03_native-linux-gcc`. 기본 위치는 `vendor/para-sdk/x86_64`이며 `PARA_SDK`로 바꿀 수 있다.
+- 생성 ARA 헤더·매니페스트. 형제 디렉터리의 `oss-ap-planning-bridge`가 있으면 이를 사용하며, `OSS_AP_SOURCE`로 바꿀 수 있다. 기존 `vendor/oss-ap`에는 Service 1814 생성물이 없으므로 이 버전의 이미지 빌드에는 최신 브리지 저장소가 필요하다.
+- `../oss-ap-planning-bridge`에서 빌드한 `oss-ap-planning-bridge:local` 이미지. 다른 태그를 쓸 때는 `BRIDGE_IMAGE`를 지정한다.
+
+`vendor/`에는 SDK 약 150MB와 기존 생성 헤더·매니페스트를 복사했다. 새 Service 1814 생성물은 형제 디렉터리의 브리지 저장소에서 가져온다. `.gitignore`와 `.dockerignore`가 `vendor/`를 제외한다. Docker BuildKit은 빌드 스크립트가 지정하는 별도 로컬 컨텍스트에서 이를 읽는다. Lanelet 지도 해독에는 저장소의 `lib/Rosless-Lanelet2`와 Boost serialization이 필요하다. 빌드 스크립트는 호스트의 Boost serialization 라이브러리를 임시 로컬 컨텍스트로 전달한다. SDK 및 생성 파일과 이를 포함한 실행 이미지는 라이선스 조건 때문에 외부에 배포하지 않는다. 다른 환경으로 소스만 옮길 때는 `vendor/`를 별도로 준비해야 한다.
+
+## 이미지 빌드와 실행
+
+두 저장소가 같은 상위 디렉터리에 있을 때 다음 순서로 실행한다.
+
+```sh
+cd ../oss-ap-planning-bridge
+./oss-ap setup
+./oss-ap build
+./oss-ap image
+cd ../planning-aa
+./adaptive/build-image.sh
+./adaptive/run-stack.sh
+```
+
+KATECH Autoware의 perception·control 이미지와 함께 시험할 때는 Autoware 저장소를 수정하지 않고 다음 스크립트를 사용한다. 이 스크립트는 기존 `run_partitions.sh`의 호스트 네트워크/ROS 도메인 42와 브리지 전용 네트워크/도메인 0의 불일치를 없애기 위해 네 컨테이너를 `planning-aa-net`, ROS 도메인 42, Cyclone DDS로 실행한다. 종료 시 시작한 컨테이너를 정지한다.
+
+```sh
+KATECH_MAP_PATH="$HOME/autoware_map/sample-map-planning" \
+  ./adaptive/run-katech-stack.sh
+```
+
+`simple_planning_simulator`는 창이 없는 ROS 노드다. 지도와 차량을 보여주는 창은 RViz이며, 스크립트는 데스크톱 세션의 `DISPLAY`와 X11 소켓이 있으면 perception 컨테이너에서 RViz를 함께 실행한다. 화면이 없는 환경에서는 자동으로 끄며, `KATECH_RVIZ=true` 또는 `KATECH_RVIZ=false`로 명시할 수 있다. RViz에서 유효한 초기 위치를 지정해야 시뮬레이터의 `waiting initialization...` 상태가 끝난다. 창이 열리지 않으면 `docker logs planning-aa-perception`에서 `rviz2` 오류를 확인한다.
+
+`run-katech-stack.sh`는 perception, control, 브리지, PlanningAA의 로그를 각각 별도 터미널에 표시한다. 로그 파일은 실행마다 `output/katech-logs/` 아래 새 디렉터리에 저장되고, 시작 터미널에 정확한 경로가 출력된다. `KATECH_LOG_DIR`로 저장 위치를 지정할 수 있다. 화면이나 터미널 프로그램을 사용할 수 없는 환경에서도 파일 수집은 계속된다. 시작 터미널에서 Ctrl+C를 누르면 스택이 종료되며 로그 파일은 남는다.
+
+이미지 기본 태그는 `ghcr.io/oss-test-group/autoware-partition:adsw-perception` 및 `:adsw-control`이다. 두 이미지가 로컬에 없으면 `docker pull ghcr.io/oss-test-group/autoware-partition:adsw-perception` 및 `docker pull ghcr.io/oss-test-group/autoware-partition:adsw-control`로 먼저 받는다. `KATECH_PERCEPTION_IMAGE`, `KATECH_CONTROL_IMAGE`로 태그를 바꿀 수 있다. 브리지는 동일한 ROS 도메인과 `rmw_cyclonedds_cpp`를 사용한다. 지도 디렉터리는 perception·control 컨테이너의 `/autoware_map`에 읽기 전용으로 탑재한다. 스크립트는 이미지의 존재를 먼저 확인하며 이미지를 내려받지는 않는다.
+
+| 브리지 경계 | ROS 2 이름 | 제공/소비 |
+| --- | --- | --- |
+| 4308 map_vectormap | `/map/vector_map` | perception의 map loader → PlanningAA |
+| 4308 localization_kinematicstate, localization_acceleration | `/localization/kinematic_state`, `/localization/acceleration` | perception localization → PlanningAA |
+| 4308 objects, pointcloud, occupancy grid, traffic signals | `/perception/object_recognition/objects`, `/perception/obstacle_segmentation/pointcloud`, `/perception/occupancy_grid_map/map`, `/perception/traffic_light_recognition/traffic_signals` | perception → PlanningAA; 점군·격자는 현재 프레임에 미반영 |
+| 4308 operation mode | `/system/operation_mode/state` | control의 operation mode transition manager → PlanningAA |
+| 4308 clock | `/clock` | simulation clock → PlanningAA |
+| 4308 velocity limit, lateral offset | `/planning/scenario_planning/max_velocity_default`, `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/input/lateral_offset` | 별도 발행자가 있어야 유입; 필수 입력 아님 |
+| 1817 route methods | `/planning/mission_planning/route_selector/main/{clear_route,set_lanelet_route,set_waypoint_route}` | 외부 경로 요청 → PlanningAA; 기존 `mission_planner/*` 별칭도 유지 |
+| 2317 trajectory event | `/planning/scenario_planning/trajectory` | PlanningAA → control |
+
+Control의 operation mode 노드는 실행되지만 실제 모드와 제어 허용 여부는 서비스 명령·시뮬레이터 상태에 따른다. Perception·control만 실행하면 route 요청과 `/planning/mission_planning/route` 발행자는 없다. 경로 요청을 별도로 보내야 PlanningAA가 궤적을 생성하고, route 토픽을 요구하는 control 일부 노드는 추가 연결이 필요하다. 위 표는 정적 배선 검증이며 Docker/ROS 2 종단 실행은 이 환경에서 확인하지 못했다.
+
+`oss-ap-planning-bridge`는 Service Creator만 빌드하고 이전 planning 앱의 실행·서비스 매니페스트도 배포에서 제외한다. `build-bridge-image.sh`는 이 전용 이미지를 입력으로 받아 매니페스트 수를 확인하는 선택 단계다. `build-image.sh`는 `planning-aa-adaptive:local`을 만든다. `run-stack.sh`는 `planning-aa-net`(`192.168.100.0/24`)을 만들고 브리지에 `.92`, PlanningAA에 `.93`을 할당한다. 두 컨테이너의 `/dev/shm`은 기본 2 GiB다. PlanningAA 쪽은 `PLANNING_AA_SHM_SIZE`로 조절할 수 있다. PlanningAA가 종료되면 스크립트가 브리지 컨테이너도 정지한다.
+
+이미지 태그는 `OSS_AP_IMAGE`, `BRIDGE_IMAGE`, `IMAGE_TAG`로 지정할 수 있다. ROS 2 도메인은 `ROS_DOMAIN_ID`(기본 `0`)로 전달한다. `RMW_IMPLEMENTATION`은 상대 Autoware와 맞춰야 한다. 네트워크 이름은 `AP_NET`, PlanningAA 주소는 `PLANNING_AA_IP`로 지정할 수 있지만, 현재 CM 매니페스트의 PlanningAA 주소는 `.93`으로 생성되므로 주소를 바꿀 때 매니페스트도 함께 바꿔야 한다.
+
+Docker 없이 컴파일·설치만 확인하려면 저장소 루트에서 실행한다.
+
+```sh
+cmake -S adaptive -B build-adaptive -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX="$(pwd)/output/adaptive"
+cmake --build build-adaptive -j 4
+cmake --install build-adaptive --component Standalone
+```
+
+## 파일 구성
+
+| 파일 | 역할 |
+| --- | --- |
+| `CMakeLists.txt` | `vendor/`에서 3개 포트와 CM 설정을 빌드 디렉터리에 준비하고 PlanningAA를 빌드 |
+| `vendor/` | 로컬 빌드용 PARA SDK와 필요한 생성 ARA 파일. Git 제외 |
+| `app/main.cpp`, `app/trajectory_output.*` | `ara::com` 입력 구독, route Method 제공, 검증된 최종 궤적의 Event 변환·송신 함수, EM 상태 보고 |
+| `app/manifest/`, `platform/` | 앱 실행·EM·머신·기능 그룹 매니페스트 |
+| `Dockerfile`, `build-image.sh`, `entrypoint.sh` | PlanningAA 실행 이미지 빌드·시작 |
+| `Dockerfile.bridge`, `build-bridge-image.sh` | 브릿지 전용 이미지의 매니페스트 검증과 파생 태그 생성 (선택) |
+| `run-image.sh`, `run-stack.sh` | PlanningAA 단독 또는 브리지와 함께 실행 |
+
+## 현재 제한
+
+점군·점유 격자·lateral offset은 여전히 최신 샘플만 보관하며 이 주행 프레임에 반영하지 않는다. Parking 경로는 연결되지 않았다. 지도·점군·점유 격자처럼 큰 UDP Event는 기존 `oss-ap` CM의 기본 `max-data-bytes=0` 설정에서 전송 실패할 수 있다. 대형 입력의 전송 방식과 실제 ROS2↔SOME/IP↔PlanningAA 종단 동작은 아직 검증되지 않았다.
+
+Event 변환은 validator가 이번 프레임을 유효하다고 판정한 궤적에만 적용한다. 내부 `TrajectoryPoint`에는 `time_from_start`가 없어, 변환기는 점 사이 거리와 속도로 이를 추정한다. 제어기와 시간 계약을 확정할 때 이 추정 규칙도 검증해야 한다.

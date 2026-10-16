@@ -207,6 +207,7 @@ endif()
 option(PLANNING_BUILD_LANELET_BIN_ADAPTER
   "저장소의 Rosless-Lanelet2 소스로 이진 지도 어댑터를 빌드합니다"
   ${PLANNING_LANELET_BIN_DEFAULT})
+include(CTest)
 if(PLANNING_BUILD_LANELET_BIN_ADAPTER)
   if(NOT EXISTS "${ROSLESS_LANELET2_SOURCE_DIR}/lanelet2_core/CMakeLists.txt" OR
      NOT EXISTS "${ROSLESS_LANELET2_SOURCE_DIR}/lanelet2_io/include/lanelet2_io/io_handlers/Serialize.h")
@@ -238,6 +239,7 @@ if(PLANNING_BUILD_LANELET_BIN_ADAPTER)
   target_compile_features(planning_lanelet_bin_adapter PUBLIC cxx_std_17)
   target_compile_options(planning_lanelet_bin_adapter PRIVATE
     -Wall -Wextra -Wpedantic)
+  if(BUILD_TESTING)
   add_executable(blind_spot_rosbag_runner tests/blind_spot_rosbag_runner.cpp)
   target_link_libraries(blind_spot_rosbag_runner PRIVATE
     planning_lanelet_bin_adapter)
@@ -289,9 +291,9 @@ if(PLANNING_BUILD_LANELET_BIN_ADAPTER)
     planning_lanelet_bin_adapter)
   target_compile_options(behavior_start_candidate_rosbag_runner PRIVATE
     -Wall -Wextra -Wpedantic)
+  endif()
 endif()
 
-include(CTest)
 if(BUILD_TESTING)
   add_executable(costmap_generator_core_test
     tests/costmap_generator_core_test.cpp)

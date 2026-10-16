@@ -2,11 +2,11 @@
 build
 build-*
 output
+adaptive/vendor
 reference
 tests
 examples
 ros
-lib/Rosless-Lanelet2
 lib/proxsuite-devel
 **/__pycache__
 **/*.pyc

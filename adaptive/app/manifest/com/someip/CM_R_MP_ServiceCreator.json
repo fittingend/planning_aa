@@ -1,0 +1,139 @@
+{
+    "generation-by" : "PARA, PopcornSAR",
+    "autosar-version" : "R20-11",
+    "manifest-type" : "service-instance-to-machine-manifest",
+    "service-protocol" : "someip",
+    "connector" : "enP4p3s0",
+    "unicast-address" : "192.168.100.92",
+    "tcp-port" : "3417",
+    "udp-port" : "3417",
+    "skeletons" : [
+    ],
+    "proxies" : [
+        {
+            "service-id" : "4308",
+            "instance-id" : "ANY",
+            "major-version" : "41",
+            "minor-version" : "ANY",
+            "client-id" : "13335",
+            "configuration-options" : [
+            ],
+            "sd-client-timing" : {
+                "initial-delay-min" : "0.1",
+                "initial-delay-max" : "0.2",
+                "repetition-base" : "0.1",
+                "repetition-max" : "4",
+                "ttl" : "16777215"
+            },
+            "eventgroups" : [
+                {
+                    "eventgroup-id" : "1",
+                    "events" : ["1"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "4001",
+                    "events" : ["4001"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "4002",
+                    "events" : ["4002"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "6001",
+                    "events" : ["6001"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "30101",
+                    "events" : ["30101"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "30201",
+                    "events" : ["30201"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "30301",
+                    "events" : ["30301"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "30401",
+                    "events" : ["30401"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "11629",
+                    "events" : ["11629"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "12503",
+                    "events" : ["12503"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                },
+                {
+                    "eventgroup-id" : "6101",
+                    "events" : ["6101"],
+                    "subscribe-ttl" : "16777215",
+                    "subscribe-retry-delay" : "0.0",
+                    "subscribe-retry-max" : "0",
+                    "req-resp-delay-min" : "0.0",
+                    "req-resp-delay-max" : "0.0"
+                }
+            ],
+            "e2e-event-protection-props" : [
+            ],
+            "e2e-method-protection-props" : [
+            ]
+        }
+    ],
+    "secure-com-props-for-tcp" : [
+    ],
+    "secure-com-props-for-udp" : [
+    ]
+}

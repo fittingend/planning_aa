@@ -1,6 +1,6 @@
 # Planning AA
 
-Autoware Decision Planning의 계산과 상태 처리를 ROS 메시지에 의존하지 않는 C++ 코어로 옮기는 저장소다. 목표 배포 형태는 Adaptive AUTOSAR 애플리케이션이다. **2026-10-11 현재 10개 rosbag의 6,085프레임에서 최종 궤적을 생성하지만, 원본과 점별 동등성·남은 코드 이관·Adaptive 실행 앱은 미완료다.**
+Autoware Decision Planning의 계산과 상태 처리를 ROS 메시지에 의존하지 않는 C++ 코어로 옮기는 저장소다. 목표 배포 형태는 Adaptive AUTOSAR 애플리케이션이다. **10개 rosbag의 6,085프레임에서 최종 궤적을 생성했고 Adaptive 통신과 실시간 주행 프레임·송신 경로를 구현했다. 원본과 점별 동등성·남은 코드 이관·ROS2↔SOME/IP 종단 실행 검증은 미완료다.**
 
 ## 이번 작업 범위
 
@@ -137,33 +137,47 @@ HPC S자의 기록 중간 경로와 이전 스무더 출력을 넣은 **조건�
 1. 출발·정적 회피의 남은 상태/안전 분기와 기본 활성 속도 모듈의 남은 계산을 종단 경로에 연결한다. 차로 변경의 실제 RTC 승인 명령 시각은 보유 기록에서 알 수 없으므로 승인 분기의 원본 동등성은 미확인으로 유지한다. 현재 승인 경로 유지와 곡선 차로 확장 경계는 코어에 반영했다.
 2. 연결된 mission/route 코어와 행동·동작 속도 모듈 적재·해제를 대상 실행 앱의 요청·응답 및 출력 계약으로 옮긴다. 행동 속도 단일 모듈 plugin 13개와 교차로 복합 plugin의 원본 load class 이름·unload 모듈 이름을 pipeline 어댑터에 연결했다. 동작 속도 plugin 3개는 원본의 전체 class 이름으로 적재·해제하며, 기본 launch 순서인 OutOfLane → 장애물 제한 → 동적 정지로 결과를 적용한다. OutOfLane은 별도 콜백의 객체·신호와 최소 제동 호길이 또는 그 계산에 필요한 콜백 상태·평활화 제한을 명시적으로 받으면 종단 계산에 연결된다. 기본 재생의 정확한 콜백 입력 공급, RTC, 좌표계·시각·유효기간·버전, 부가 출력·오류 의미는 미완료다. 주차 계약은 제외한다.
 3. 평활화·최적화·장애물 후보·최종 스무더의 연속 상태를 같은 원본 콜백 입력으로 비교하고, blocking·S자에서 계산의 첫 차이를 줄인다. S자 초기 조건부 재생은 행동 경로·행동 속도 158/160프레임이 점별로 같아도 첫 프레임 Elastic Band가 482/484점이고 시작점이 약 1m 다르다. 원본 Elastic Band에는 독립 재생 시작 전 출력 3개가 있고 그 첫 출력보다 첫 odometry 기록이 늦다. 이전 최적화 상태를 현재 bag 입력만으로 재현할 수 있는지와 `cropPoints` 후방 절단·실행 당시 입력 자세·후방 길이를 분리해 확인해야 한다. S자 390번의 정지 누락은 원본 패키지 전환 임계값을 쓰는 조건부 재생에서 해소되지만, 478~535번 미래 충돌·일시 통과 판정은 기록 원본과 현재 원본 노드 재실행부터 다르다. 당시 실행 설정·버전이나 실제 polling 입력을 확보해 차이를 분리해야 한다. 630번은 기본 재생 속도가 가까워졌으나 전체 시나리오와 연속 상태까지 동등하지 않다. 최종 스무더의 원본 순서인 앞 200m·뒤 5m 절단 후 외부 제한·정지 접근 적용, 저속 출발 중 외부 제한 직접 적용, 정지 중 제한 거리 초기화와 제한점 삽입 기준은 연결했다. 10개 bag 기본 재생의 S자 749개 비교 프레임 중앙값/95백분위는 0.036/1.741m/s다. 원본 당시 콜백 ID·설정이 없는 분기는 동등성 미확인으로 유지한다.
-4. 대상 Adaptive AUTOSAR 플랫폼과 프로세스 경계를 정한 뒤 실행 앱·매니페스트·브리지·재시작/상태 복원을 구현하고 목표 장치에서 시간·풀이기 정책을 검증한다. 이 단계는 아직 구현 전이다.
+4. Adaptive 실행 앱·매니페스트·브리지의 기본 포트 연결을 확장하고, 계산 코어에 입력을 변환해 공급한 뒤 궤적 송신·재시작/상태 복원·목표 장치 시간 정책을 검증한다.
 
 [동작 속도 콜백 감사](reference/motion_velocity_callback_audit_20261011.md)는 blocking·S자 입력 경로와 원본 출력의 header를 대응시키고, 그 사이에 새 odometry·acceleration·객체가 들어온 프레임 수를 기록한다. 당시 첫 큰 차이였던 S자 630번 최종 스무더 속도는 이번 제한점 삽입 수정으로 줄었다. blocking 320번의 행동 경로와 S자 390번의 차로 주행 정지 삽입은 남는다. 이 감사는 실제 polling 반환 메시지 ID를 복원하지 않는다.
 
 ## 빌드
 
-### Adaptive AUTOSAR 컨테이너 부트스트랩
+### Adaptive AUTOSAR 컨테이너와 oss-ap 브리지
 
-`adaptive/`에는 PopcornSAR PARA **R20-11 x86_64** SDK를 사용한 별도 빌드 진입점, Execution Management 매니페스트, `PlanningAA` 프로세스와 Docker 이미지 정의가 있다. SDK는 저장소에 복사하지 않는다. 기본 SDK 경로는 인접한 `../oss-ap/sdk/x86_64`이며, 다른 설치본은 `PARA_SDK`로 지정한다. 이 SDK의 버전은 `R20-11_v26.04.03_native-linux-gcc`이다. SDK 라이선스가 복제·배포를 제한하므로 SDK 런타임을 포함한 이미지는 권한을 확인하기 전까지 로컬 개발용으로만 사용한다.
+`adaptive/`에는 PopcornSAR PARA **R20-11 x86_64** SDK를 사용한 실행 앱·EM/CM 매니페스트·Docker 정의가 있다. 단독 빌드를 위해 SDK와 필요한 생성 ARA 헤더·매니페스트를 `adaptive/vendor/`에 로컬 복사해 두었다. 이 디렉터리는 Git과 일반 Docker 빌드 컨텍스트에서 제외한다. 다른 설치본은 `PARA_SDK`와 `OSS_AP_SOURCE`로 지정할 수 있다. SDK 버전은 `R20-11_v26.04.03_native-linux-gcc`이다. SDK와 생성물의 라이선스가 복제·배포를 제한하므로 `adaptive/vendor/` 및 SDK 런타임을 포함한 이미지는 외부에 배포하지 않는다.
+
+`~/interface ROS2 to AA`에 적힌 실제 SOME/IP 계약의 연결 상태는 다음과 같다. 11개 입력 Event는 `oss-ap`의 `SCr2MP`(Service 4308)에서 ROS2→AA로 보낸다. `PlanningAA`는 Lanelet 지도·route·odometry를 주행 프레임 생산자에 연결하고, 인식 객체·교통 신호·가속도·속도 제한·운영 모드를 계산에 반영한다. route Method 3개(10801/10809/10812)는 `PlanningAA`가 Service 1817로 응답한다. Lanelet route는 전달받은 segment를 route 코어에 넘기며 waypoint route는 지도에서 경로를 탐색한다. **궤적 출력은 Event 12506(Service 2317) 하나**다. 최종 파이프라인이 검증한 궤적을 변환해 `Send()`하는 실행 경로를 연결했다. 실차·ROS2↔SOME/IP 종단 송신은 아직 검증되지 않았다.
+
+| 구간 | ROS2 ↔ AA | 구현 |
+| --- | --- | --- |
+| clock·localization·지도·perception·외부 속도·운영 모드, Event 11개 | ROS2 → `oss-ap` → `PlanningAA` | 브리지 송신과 AA 구독·최신 샘플 보관 |
+| clear/lanelet/waypoint route, Method 3개 | ROS2 → `oss-ap` → `PlanningAA` | `mission_planner/*`와 `route_selector/main/*` 이름 제공, 지도 기반 waypoint 경로 탐색 |
+| final trajectory, Event 12506 | `PlanningAA` → `oss-ap` → ROS2 | route 기반 주행 프레임 생성, 검증, 변환·송신 경로 연결. 종단 실행 미검증 |
+
+두 컨테이너는 Docker 네트워크 `192.168.100.0/24`에서 각각 `.92`(브릿지)와 `.93`(`PlanningAA`)을 사용한다. 별도 `oss-ap-planning-bridge` 복사본은 `Exe_ServiceCreator`만 빌드하고 이전 planning 앱의 매니페스트도 배포에서 제외한다. 원본 `oss-ap` 저장소는 수정하지 않는다.
 
 ```sh
+cd ../oss-ap-planning-bridge
+./oss-ap setup && ./oss-ap build && ./oss-ap image
+cd ../planning-aa
 ./adaptive/build-image.sh
-./adaptive/run-image.sh
+./adaptive/run-stack.sh
 ```
 
-`IMAGE_TAG`로 이미지 이름을 바꿀 수 있다. `build-image.sh`는 Docker BuildKit의 별도 `para_sdk` 빌드 컨텍스트를 사용해 SDK를 빌드 중에 공급하며, 설치 트리에 EM·PARA 런타임·`PlanningAA`를 모아 실행 이미지에 넣는다. Docker 없이 CMake 빌드만 확인하려면 다음을 실행한다.
+KATECH perception·control 이미지를 같은 ROS 도메인과 Docker 네트워크에서 실행할 때는 `./adaptive/run-katech-stack.sh`를 사용한다. 토픽 대응과 남은 route 토픽 제약은 [adaptive 실행 문서](adaptive/README.md)에 정리했다.
+
+`IMAGE_TAG`로 PlanningAA 이미지 이름을 바꿀 수 있다. `build-image.sh`는 `adaptive/vendor/`의 SDK·생성물을 Docker BuildKit의 `para_sdk`와 `oss_ap` 빌드 컨텍스트로 읽고, 실행 이미지에 EM·CM·PARA 런타임·`PlanningAA`를 설치한다. Docker 없이 CMake 빌드만 확인하려면 다음을 실행한다.
 
 ```sh
 cmake -S adaptive -B build-adaptive -G Ninja \
-  -DPARA_SDK="$(realpath ../oss-ap/sdk/x86_64)" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX="$(pwd)/output/adaptive"
 cmake --build build-adaptive -j 4
 cmake --install build-adaptive --component Standalone
 ```
 
-현재 `PlanningAA`는 `planning_core`에 링크하고 `ara::core` 초기화, `ara::exec`의 Running 보고, 종료 신호 처리를 수행하는 **실행 골격**이다. [위 In/Out 계약](#adaptive-autosar-앱-inout-인터페이스-초안)의 `ara::com` 서비스·이벤트, 지도 입력, 실제 궤적 발행은 아직 연결되지 않았다. 초기 빌드는 지도 어댑터와 ProxQP를 끄므로 원본 계산 동등성이나 실차 배포를 검증한 이미지가 아니다.
+이 빌드는 지도 어댑터와 ProxQP를 끈다. 현재 지도 메시지의 내용은 해독하지 않고 비어 있지 않은지만 확인한다. perception 샘플도 최신값으로 보관할 뿐 계산 코어에 변환해 넣지 않는다. 따라서 이미지가 만들어져도 실제 궤적이 발행되지는 않는다. 지도·점군·점유 격자의 UDP 이벤트는 64KiB를 넘을 수 있으며 `oss-ap` CM의 기본 `max-data-bytes=0` 설정에서 전송 실패할 수 있다. 대형 데이터의 분할 또는 TCP 전환과 양쪽 매니페스트·제한값 검증이 필요하다.
 
 ### 계산 코어
 
