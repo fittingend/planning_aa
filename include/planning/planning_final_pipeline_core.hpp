@@ -48,6 +48,14 @@ struct PlanningFinalResult {
   std::optional<Trajectory> smoothed;
   std::optional<ValidationOutcome> validation;
   bool smoother_solved = false;
+  double smoother_ms = 0.0;
+  double qp_first_solve_ms = 0.0;
+  double qp_retry_ms = 0.0;
+  int qp_first_iterations = 0;
+  int qp_iterations = 0;
+  std::size_t qp_points = 0;
+  JerkQpBackend qp_backend = JerkQpBackend::Admm;
+  bool qp_retried = false;
 };
 
 class PlanningFinalPipelineCore {

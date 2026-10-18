@@ -2,6 +2,7 @@
 #include "planning/planning_final_pipeline_core.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <limits>
 #include <optional>
@@ -461,9 +462,19 @@ PlanningFinalResult PlanningFinalPipelineCore::onFrame(
   resampled.back().longitudinal_velocity_mps = 0.0F;
   const std::size_t closest = nearestPoint(resampled, frame.ego);
   const Trajectory clipped(resampled.begin() + closest, resampled.end());
+  const auto smoother_started = std::chrono::steady_clock::now();
   auto solved = runJerkSmoother(
       clipped, initial.motion.velocity, initial.motion.acceleration,
       smoother_parameters_);
+  result.smoother_ms = std::chrono::duration<double, std::milli>(
+      std::chrono::steady_clock::now() - smoother_started).count();
+  result.qp_first_solve_ms = solved.qp_first_solve_ms;
+  result.qp_retry_ms = solved.qp_retry_ms;
+  result.qp_first_iterations = solved.qp_first_iterations;
+  result.qp_iterations = solved.qp_result.iterations;
+  result.qp_points = solved.optimization_input.size();
+  result.qp_backend = solved.qp_result.backend;
+  result.qp_retried = solved.qp_retried;
   if (!solved.output) return result;
   result.smoother_solved = solved.qp_result.solved;
   auto parameters = node_parameters_;

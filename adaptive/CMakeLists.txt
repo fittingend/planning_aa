@@ -89,7 +89,10 @@ set(Boost_NO_BOOST_CMAKE ON CACHE BOOL "Find the staged Boost serialization libr
 set(PLANNING_BUILD_GRID_ADAPTER OFF CACHE BOOL "No grid adapter in bootstrap" FORCE)
 set(PLANNING_BUILD_OSM_ADAPTER OFF CACHE BOOL "No OSM adapter in bootstrap" FORCE)
 set(PLANNING_BUILD_LANELET_BIN_ADAPTER ON CACHE BOOL "Decode LaneletMapBin for live planning" FORCE)
-set(PLANNING_USE_PROXQP OFF CACHE BOOL "No ProxQP in bootstrap" FORCE)
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../lib/proxsuite-devel/include/proxsuite/proxqp/sparse/sparse.hpp")
+  message(FATAL_ERROR "PlanningAA requires the bundled ProxQP solver")
+endif()
+set(PLANNING_USE_PROXQP ON CACHE BOOL "Use the bundled ProxQP solver" FORCE)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/.." planning-core)
 
 set(PARA_APP_NAME PlanningAA)
@@ -97,7 +100,8 @@ set(PARA_APP_VERSION 0.1.0)
 set(PARA_APP_GEN_DIR "${PLANNING_GEN}")
 Para_App()
 
-add_executable(PlanningAA app/main.cpp app/trajectory_output.cpp)
+add_executable(PlanningAA app/main.cpp app/trajectory_output.cpp
+  app/diagnostic_output.cpp app/route_visualization_output.cpp)
 target_compile_features(PlanningAA PRIVATE cxx_std_17)
 target_link_libraries(PlanningAA PRIVATE planning_lanelet_bin_adapter pthread)
 target_include_directories(PlanningAA PRIVATE "${OSS_ECU}/Exe_missionplanner/include")

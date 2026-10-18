@@ -11,7 +11,7 @@
 | `PPort_MP2RS` | PlanningAA → `oss-ap` | 1814 | 경로 상태 Event 10604 (`route_selector/main/state`) |
 | `PPort_PV2SCr` | PlanningAA → `oss-ap` | 2317 | **최종 궤적 Event 12506 하나** |
 
-`PlanningAA`는 `map_vectormap`의 `LaneletMapBin.data`를 Lanelet 어댑터로 해독한다. 지도, route, odometry와 운영 모드가 준비되면 새 odometry마다 route 기반 주행 경로를 만들고, 인식 객체·교통 신호·가속도·속도 제한을 반영해 `PlanningFinalFrame`을 조립한다. 최종 파이프라인의 검증을 통과한 궤적만 Event 12506으로 변환해 `Send()`한다. `Planning services active`는 통신 준비 상태이며, 실제 송신은 `Published final trajectory Event 12506` 로그로 확인한다. 지도와 odometry의 `frame_id`가 일치해야 한다. Lanelet route 요청의 segment를 사용하고, waypoint route 요청은 해독한 지도에서 경로를 탐색한다. 자세한 상태는 [저장소 README](../README.md#adaptive-autosar-컨테이너와-oss-ap-브리지)를 참고한다.
+`PlanningAA`는 `map_vectormap`의 `LaneletMapBin.data`를 Lanelet 어댑터로 해독한다. 지도, route, odometry와 운영 모드가 준비되면 새 odometry마다 route 기반 주행 경로를 만들고, 인식 객체·교통 신호·가속도·속도 제한을 반영해 `PlanningFinalFrame`을 조립한다. 최종 파이프라인의 검증을 통과한 궤적만 Event 12506으로 변환해 `Send()`한다. AA의 `PlanningValidatorCore` 결과 14개는 `run-katech-stack.sh`가 시작한 ROS 진단 어댑터로 전달되어 `/diagnostics`에 발행된다. 검증에 실패하면 ERROR 진단을 보내고 궤적을 발행하지 않는다. 진단 어댑터는 검증 계산을 하지 않으며 Control 이미지에도 Planning 검증 노드를 추가하지 않는다. `Planning services active`는 통신 준비 상태이며, 실제 송신은 `Published final trajectory Event 12506` 로그로 확인한다. 지도와 odometry의 `frame_id`가 일치해야 한다. Lanelet route 요청의 segment를 사용하고, waypoint route 요청은 해독한 지도에서 경로를 탐색한다. 자세한 상태는 [저장소 README](../README.md#adaptive-autosar-컨테이너와-oss-ap-브리지)를 참고한다.
 
 실행 매니페스트는 `CM=Running`을 `PlanningAA`의 시작 조건으로 둔다. CM이 초기화되기 전에 `OfferService()`를 호출하면 서비스 제공이 실패할 수 있다.
 
@@ -47,9 +47,15 @@ KATECH_MAP_PATH="$HOME/autoware_map/sample-map-planning" \
 
 `simple_planning_simulator`는 창이 없는 ROS 노드다. 지도와 차량을 보여주는 창은 RViz이며, 스크립트는 데스크톱 세션의 `DISPLAY`와 X11 소켓이 있으면 perception 컨테이너에서 RViz를 함께 실행한다. 화면이 없는 환경에서는 자동으로 끄며, `KATECH_RVIZ=true` 또는 `KATECH_RVIZ=false`로 명시할 수 있다. RViz에서 유효한 초기 위치를 지정해야 시뮬레이터의 `waiting initialization...` 상태가 끝난다. 창이 열리지 않으면 `docker logs planning-aa-perception`에서 `rviz2` 오류를 확인한다.
 
+`run-katech-stack.sh`는 `PLANNING_AA_SIMULATION=1`을 기본으로 전달한다. 샘플 시뮬레이터에 신호 인식 메시지가 없으면 신호등 앞에서 계속 정지하지 않도록 하는 원본 planning simulator 설정과 같다. 실제 신호를 처리해야 하는 실행에서는 `PLANNING_AA_SIMULATION=0 ./adaptive/run-katech-stack.sh`로 시작한다. 이때 신호 메시지가 없거나 오래되면 정지한다.
+
 `run-katech-stack.sh`는 perception, control, 브리지, PlanningAA의 로그를 각각 별도 터미널에 표시한다. 로그 파일은 실행마다 `output/katech-logs/` 아래 새 디렉터리에 저장되고, 시작 터미널에 정확한 경로가 출력된다. `KATECH_LOG_DIR`로 저장 위치를 지정할 수 있다. 화면이나 터미널 프로그램을 사용할 수 없는 환경에서도 파일 수집은 계속된다. 시작 터미널에서 Ctrl+C를 누르면 스택이 종료되며 로그 파일은 남는다.
 
-이미지 기본 태그는 `ghcr.io/oss-test-group/autoware-partition:adsw-perception` 및 `:adsw-control`이다. 두 이미지가 로컬에 없으면 `docker pull ghcr.io/oss-test-group/autoware-partition:adsw-perception` 및 `docker pull ghcr.io/oss-test-group/autoware-partition:adsw-control`로 먼저 받는다. `KATECH_PERCEPTION_IMAGE`, `KATECH_CONTROL_IMAGE`로 태그를 바꿀 수 있다. 브리지는 동일한 ROS 도메인과 `rmw_cyclonedds_cpp`를 사용한다. 지도 디렉터리는 perception·control 컨테이너의 `/autoware_map`에 읽기 전용으로 탑재한다. 스크립트는 이미지의 존재를 먼저 확인하며 이미지를 내려받지는 않는다.
+KATECH 실행에서는 브리지의 `SERVICECREATOR_TRACE_VALUES=1`을 켜서 `planning-aa-bridge.log`에 궤적의 점 개수·첫 점·시각을 기록한다. Control 컨테이너에서는 읽기 전용 진단 구독자를 실행해 `/planning/scenario_planning/trajectory`의 발행자, 수신 개수, 첫 점·끝 점, 유한하지 않은 필드를 `trajectory-diagnostic.log`에 저장한다. AA가 계산한 검증 결과는 Docker 내부망의 UDP 12507을 통해 브릿지 컨테이너의 `validator-diagnostic-bridge.py`로 전달하고, 이 어댑터가 `/diagnostics`에 발행한다. 진단 어댑터의 기동 오류는 `validator-diagnostic-bridge.log`, 각 진단 상태 변화는 `trajectory-diagnostic.log`에 남는다. Goal pose를 지정한 뒤 두 궤적 로그의 시각과 첫 점을 대조하면 브리지와 ROS 수신 사이의 차이를 확인할 수 있다. 값을 끄려면 `SERVICECREATOR_TRACE_VALUES=0`으로 실행한다.
+
+`planning-aa.log`의 `PLAA_TIMING`에는 경로 계산, 최종 처리, 스무더, 첫 QP 풀이와 재시도 시간·반복 횟수가 프레임마다 기록된다. KATECH 실행에서 기본 활성화되며 `PLANNING_AA_TIMING=0`으로 끌 수 있다. RViz의 `ScenarioTrajectory`는 제어용 국소 궤적으로, 원본과 같은 후처리 최소 길이 30 m 때문에 목표 전에 끝나 보일 수 있다. 전체 경로는 Perception 컨테이너의 UDP 12508 진단 어댑터가 `/planning/mission_planning/route_marker`의 `RouteArea`에 별도로 표시한다. `route-visualization-bridge.log`에 발행된 경로 점 수와 끝 좌표를 남긴다. 이 마커는 제어용 궤적에 영향을 주지 않는다.
+
+이미지 기본 태그는 `katech-autoware-system-control:adsw-perception` 및 `katech-autoware-system-control:adsw-control`이다. 두 이미지는 `../katech-autoware/katech-autosare-new`에서 `./partition/partition_build.sh --repo katech-autoware-system-control --no-cuda --skip-vcs-update`로 빌드한다. Control 이미지에는 이동된 System이 포함된다. `KATECH_IMAGE_REPO` 또는 개별 `KATECH_PERCEPTION_IMAGE`, `KATECH_CONTROL_IMAGE`로 태그를 바꿀 수 있다. 브리지는 동일한 ROS 도메인과 `rmw_cyclonedds_cpp`를 사용한다. 지도 디렉터리는 perception·control 컨테이너의 `/autoware_map`에 읽기 전용으로 탑재한다. 스크립트는 이미지의 존재를 먼저 확인하며 이미지를 내려받지는 않는다.
 
 | 브리지 경계 | ROS 2 이름 | 제공/소비 |
 | --- | --- | --- |
@@ -62,7 +68,11 @@ KATECH_MAP_PATH="$HOME/autoware_map/sample-map-planning" \
 | 1817 route methods | `/planning/mission_planning/route_selector/main/{clear_route,set_lanelet_route,set_waypoint_route}` | 외부 경로 요청 → PlanningAA; 기존 `mission_planner/*` 별칭도 유지 |
 | 2317 trajectory event | `/planning/scenario_planning/trajectory` | PlanningAA → control |
 
-Control의 operation mode 노드는 실행되지만 실제 모드와 제어 허용 여부는 서비스 명령·시뮬레이터 상태에 따른다. Perception·control만 실행하면 route 요청과 `/planning/mission_planning/route` 발행자는 없다. 경로 요청을 별도로 보내야 PlanningAA가 궤적을 생성하고, route 토픽을 요구하는 control 일부 노드는 추가 연결이 필요하다. 위 표는 정적 배선 검증이며 Docker/ROS 2 종단 실행은 이 환경에서 확인하지 못했다.
+Control의 operation mode 노드는 실행되지만 실제 모드와 제어 허용 여부는 서비스 명령·시뮬레이터 상태에 따른다. Perception·control만 실행하면 route 요청과 `/planning/mission_planning/route` 발행자는 없다. 경로 요청을 별도로 보내야 PlanningAA가 궤적을 생성한다.
+
+2026-10-19에 원본 `partition/run_partitions.sh --headless`와 AA `run-katech-stack.sh`를 각각 실행하고 같은 차량 초기 위치 `(3648.0, 73505.0, 19.0)`와 목표 `(3632.5, 73628.0, 19.0)`를 `/initialpose3d` 및 main waypoint route 서비스에 보냈다. 두 실행 모두 route 요청이 성공했고, 출력 route의 lanelet 구간 `102 → 87`, 시작·목표 자세, 최종 trajectory의 점 수(171점)와 `time_from_start`가 일치했다. 수집한 trajectory 3건의 대응 점에서 최대 위치 차이는 `9.5e-6 m`, quaternion 성분 차이는 `7.6e-7`, 종방향 속도 차이는 `2.4e-7 m/s`였다. 비교에는 `compare_runtime_probe.py`와 `compare_runtime_results.py`를 사용했다. 매 실행에서 생성되는 route UUID와 header 시각은 비교 대상에서 제외했다.
+
+이 한 경로의 일치는 decision 전체 대체를 증명하지 않는다. 원본 실행의 ROS 그래프에는 발행자가 있었지만 AA 기본 배치에는 `mission_remaining_distance_time`, `scenario_selector/trajectory`, `planning_evaluator/metrics`, `modified_goal`, 방향지시등·비상등 명령 등의 발행자가 확인되지 않았다. 이 출력의 필요 여부와 실제 대체 경로는 별도로 검증해야 한다.
 
 `oss-ap-planning-bridge`는 Service Creator만 빌드하고 이전 planning 앱의 실행·서비스 매니페스트도 배포에서 제외한다. `build-bridge-image.sh`는 이 전용 이미지를 입력으로 받아 매니페스트 수를 확인하는 선택 단계다. `build-image.sh`는 `planning-aa-adaptive:local`을 만든다. `run-stack.sh`는 `planning-aa-net`(`192.168.100.0/24`)을 만들고 브리지에 `.92`, PlanningAA에 `.93`을 할당한다. 두 컨테이너의 `/dev/shm`은 기본 2 GiB다. PlanningAA 쪽은 `PLANNING_AA_SHM_SIZE`로 조절할 수 있다. PlanningAA가 종료되면 스크립트가 브리지 컨테이너도 정지한다.
 
@@ -94,4 +104,4 @@ cmake --install build-adaptive --component Standalone
 
 점군·점유 격자·lateral offset은 여전히 최신 샘플만 보관하며 이 주행 프레임에 반영하지 않는다. Parking 경로는 연결되지 않았다. 지도·점군·점유 격자처럼 큰 UDP Event는 기존 `oss-ap` CM의 기본 `max-data-bytes=0` 설정에서 전송 실패할 수 있다. 대형 입력의 전송 방식과 실제 ROS2↔SOME/IP↔PlanningAA 종단 동작은 아직 검증되지 않았다.
 
-Event 변환은 validator가 이번 프레임을 유효하다고 판정한 궤적에만 적용한다. 내부 `TrajectoryPoint`에는 `time_from_start`가 없어, 변환기는 점 사이 거리와 속도로 이를 추정한다. 제어기와 시간 계약을 확정할 때 이 추정 규칙도 검증해야 한다.
+Event 변환은 validator가 이번 프레임을 유효하다고 판정한 궤적에만 적용한다. 내부 `TrajectoryPoint`에는 `time_from_start`가 없으며, 원본 planning_validator의 출력과 동일하게 이 필드를 0으로 발행한다.

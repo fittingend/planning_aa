@@ -4,6 +4,7 @@
 
 #include "planning/jerk_smoother.hpp"
 
+#include <chrono>
 #include <cmath>
 #include <stdexcept>
 
@@ -47,13 +48,21 @@ JerkSmootherResult runJerkSmoother(
 
   const auto problem = buildJerkQpProblem(
       result.optimization_input, initial_velocity, initial_acceleration, p.qp);
+  const auto first_solve_started = std::chrono::steady_clock::now();
   result.qp_result = solveJerkQp(problem, p.solver);
+  result.qp_first_solve_ms = std::chrono::duration<double, std::milli>(
+      std::chrono::steady_clock::now() - first_solve_started).count();
+  result.qp_first_iterations = result.qp_result.iterations;
   if (!result.qp_result.solved &&
       result.qp_result.backend == JerkQpBackend::Admm &&
       p.solver.penalty == 1.0) {
     auto retry = p.solver;
     retry.penalty = 0.1;
+    result.qp_retried = true;
+    const auto retry_started = std::chrono::steady_clock::now();
     result.qp_result = solveJerkQpAdmm(problem, retry);
+    result.qp_retry_ms = std::chrono::duration<double, std::milli>(
+        std::chrono::steady_clock::now() - retry_started).count();
   }
   if (result.qp_result.solved) {
     result.output = convertJerkQpSolution(

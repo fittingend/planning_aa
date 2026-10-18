@@ -11,6 +11,8 @@
 #include "planning/planning_final_pipeline_core.hpp"
 #include "planning/planning_pipeline_map_adapter.hpp"
 #include "planning/planning_route_coordinator.hpp"
+#include "diagnostic_output.hpp"
+#include "route_visualization_output.hpp"
 #include "trajectory_output.hpp"
 
 #include <algorithm>
@@ -19,6 +21,7 @@
 #include <cmath>
 #include <condition_variable>
 #include <csignal>
+#include <cstdio>
 #include <cstdlib>
 #include <exception>
 #include <iomanip>
@@ -26,6 +29,7 @@
 #include <mutex>
 #include <optional>
 #include <sstream>
+#include <string>
 #include <thread>
 
 namespace {
@@ -54,10 +58,16 @@ double nowSeconds() {
 
 planning::RouteCheckpoint checkpoint(const oss::type::geometry_msgs::msg::Pose &pose) {
   const auto &q = pose.orientation;
-  return {pose.position.x, pose.position.y,
+  planning::RouteCheckpoint result{pose.position.x, pose.position.y,
           std::atan2(2.0 * (q.w * q.z + q.x * q.y),
                      1.0 - 2.0 * (q.y * q.y + q.z * q.z)),
           pose.position.z};
+  result.orientation_x = q.x;
+  result.orientation_y = q.y;
+  result.orientation_z = q.z;
+  result.orientation_w = q.w;
+  result.has_orientation = true;
+  return result;
 }
 
 template <class Uuid>
@@ -81,13 +91,18 @@ struct SharedState {
                          const std::vector<planning::RouteCheckpoint> &waypoints,
                          planning::RouteCheckpoint goal)
       -> std::optional<planning::MissionRoute> {
-    if (!route_map) return std::nullopt;
+    route_failure.clear();
+    if (!route_map) {
+      route_failure = "Lanelet map is not ready.";
+      return std::nullopt;
+    }
     std::vector<planning::RouteCheckpoint> checkpoints;
     checkpoints.reserve(waypoints.size() + 2);
     checkpoints.push_back(start);
     checkpoints.insert(checkpoints.end(), waypoints.begin(), waypoints.end());
     checkpoints.push_back(goal);
-    return route_map->routeThroughCheckpoints(checkpoints);
+    return route_map->routeThroughCheckpoints(checkpoints, false,
+                                             &route_failure);
   }) {}
 
   std::mutex mutex;
@@ -96,6 +111,7 @@ struct SharedState {
   std::uint64_t map_generation = 0;
   std::uint64_t odometry_generation = 0;
   std::shared_ptr<planning::LaneletBinAdapter> route_map;
+  std::string route_failure;
   planning::PlanningRouteCoordinator routes;
   std::optional<oss::type::rosgraph_msgs::msg::Clock> clock;
   std::optional<oss::type::geometry_msgs::msg::AccelWithCovarianceStamped> acceleration;
@@ -110,18 +126,86 @@ struct SharedState {
   std::optional<oss::type::autoware_adapi_v1_msgs::msg::OperationModeState> operation_mode;
 };
 
+oss::type::autoware_adapi_v1_msgs::msg::ResponseStatus handleWaypointRoute(
+    SharedState &state, planning::RouteSelectorRequest request) {
+  state.route_failure.clear();
+  auto status = state.routes.handle(
+      planning::RouteChannel::Main, std::move(request), nowSeconds());
+  if (status.code == static_cast<int>(planning::MissionPlannerCode::PlannerFailed) &&
+      !state.route_failure.empty())
+    status.message = state.route_failure;
+  return responseStatus(status);
+}
+
+struct FinalFrameTiming {
+  double pipeline_ms = 0.0;
+  double conversion_ms = 0.0;
+  double send_ms = 0.0;
+  double smoother_ms = 0.0;
+  double qp_first_solve_ms = 0.0;
+  double qp_retry_ms = 0.0;
+  int qp_first_iterations = 0;
+  int qp_iterations = 0;
+  std::size_t qp_points = 0;
+  planning::JerkQpBackend qp_backend = planning::JerkQpBackend::Admm;
+  bool qp_retried = false;
+  bool qp_solved = false;
+};
+
 bool publishFinalFrame(planning::PlanningFinalPipelineCore &pipeline,
                        TrajectorySkeleton &trajectory,
+                       adaptive::DiagnosticOutput &diagnostic_output,
                        ara::log::Logger &log,
                        const planning::PlanningFinalFrame &frame,
-                       const std::string &frame_id) {
+                       const std::string &frame_id,
+                       const planning::RouteCheckpoint &goal,
+                       bool log_details,
+                       FinalFrameTiming *timing = nullptr) {
+  const auto started = std::chrono::steady_clock::now();
   const auto result = pipeline.onFrame(frame);
+  const auto planned = std::chrono::steady_clock::now();
+  if (result.validation)
+    diagnostic_output.send(*result.validation, frame.now_s);
   const auto event = adaptive::makeTrajectoryEvent(result, frame.now_s, frame_id);
+  const auto converted = std::chrono::steady_clock::now();
+  if (timing) {
+    timing->pipeline_ms = std::chrono::duration<double, std::milli>(planned - started).count();
+    timing->conversion_ms = std::chrono::duration<double, std::milli>(converted - planned).count();
+    timing->smoother_ms = result.smoother_ms;
+    timing->qp_first_solve_ms = result.qp_first_solve_ms;
+    timing->qp_retry_ms = result.qp_retry_ms;
+    timing->qp_first_iterations = result.qp_first_iterations;
+    timing->qp_iterations = result.qp_iterations;
+    timing->qp_points = result.qp_points;
+    timing->qp_backend = result.qp_backend;
+    timing->qp_retried = result.qp_retried;
+    timing->qp_solved = result.smoother_solved;
+  }
   if (!event) return false;
   const auto sent = trajectory.planning_scenarioplanning_trajectory.Send(*event);
+  if (timing)
+    timing->send_ms = std::chrono::duration<double, std::milli>(
+        std::chrono::steady_clock::now() - converted).count();
   if (!sent.HasValue()) {
     log.LogError() << "Failed to send final trajectory Event 12506";
     return false;
+  }
+  if (log_details) {
+    const auto &full_end = frame.lane_driving.back();
+    const auto &local_end = event->points.back().pose.position;
+    double local_length_m = 0.0;
+    for (std::size_t i = 1; i < event->points.size(); ++i) {
+      const auto &a = event->points[i - 1].pose.position;
+      const auto &b = event->points[i].pose.position;
+      local_length_m += std::hypot(b.x - a.x, b.y - a.y);
+    }
+    log.LogInfo() << "Trajectory geometry: goal=(" << goal.x << ", "
+                  << goal.y << ") full_path_end=(" << full_end.x << ", "
+                  << full_end.y << ") local_end=(" << local_end.x << ", "
+                  << local_end.y << ") local_length_m=" << local_length_m
+                  << " local_goal_distance_m="
+                  << std::hypot(local_end.x - goal.x, local_end.y - goal.y)
+                  << " points=" << event->points.size();
   }
   return true;
 }
@@ -314,8 +398,7 @@ class RouteService final : public RouteSkeleton {
       request.waypoints.push_back(checkpoint(pose));
     std::lock_guard<std::mutex> lock(state_.mutex);
     planning_missionplanning_missionplanner_setwaypointrouteOutput output{};
-    output.res.status = responseStatus(state_.routes.handle(
-        planning::RouteChannel::Main, std::move(request), nowSeconds()));
+    output.res.status = handleWaypointRoute(state_, std::move(request));
     ara::core::Promise<planning_missionplanning_missionplanner_setwaypointrouteOutput> promise;
     promise.set_value(output);
     return promise.get_future();
@@ -391,8 +474,7 @@ class RouteStateService final : public RouteStateSkeleton {
     planning_missionplanning_missionplanner_setwaypointrouteOutput output{};
     {
       std::lock_guard<std::mutex> lock(state_.mutex);
-      output.res.status = responseStatus(state_.routes.handle(
-          planning::RouteChannel::Main, std::move(request), nowSeconds()));
+      output.res.status = handleWaypointRoute(state_, std::move(request));
     }
     ara::core::Promise<planning_missionplanning_missionplanner_setwaypointrouteOutput> promise;
     promise.set_value(output);
@@ -416,6 +498,50 @@ std::uint8_t routeStateValue(planning::RouteLifecycleState value) {
   }
 }
 
+oss::type::autoware_planning_msgs::msg::LaneletRoute routeMessage(
+    const planning::RouteSelectorRoute &route) {
+  oss::type::autoware_planning_msgs::msg::LaneletRoute message{};
+  const double stamp = route.stamp_s > 0.0 ? route.stamp_s : nowSeconds();
+  message.header.stamp.sec = static_cast<decltype(message.header.stamp.sec)>(stamp);
+  message.header.stamp.nanosec = static_cast<decltype(message.header.stamp.nanosec)>(
+      (stamp - static_cast<double>(message.header.stamp.sec)) * 1e9);
+  message.header.frame_id = "map";
+  const auto set_pose = [](const planning::RouteCheckpoint &checkpoint, auto &pose,
+                           bool preserve_orientation) {
+    pose.position.x = checkpoint.x;
+    pose.position.y = checkpoint.y;
+    pose.position.z = checkpoint.z;
+    if (preserve_orientation && checkpoint.has_orientation) {
+      pose.orientation.x = checkpoint.orientation_x;
+      pose.orientation.y = checkpoint.orientation_y;
+      pose.orientation.z = checkpoint.orientation_z;
+      pose.orientation.w = checkpoint.orientation_w;
+    } else {
+      pose.orientation.x = 0.0;
+      pose.orientation.y = 0.0;
+      pose.orientation.z = std::sin(checkpoint.yaw_rad / 2.0);
+      pose.orientation.w = std::cos(checkpoint.yaw_rad / 2.0);
+    }
+  };
+  set_pose(route.start, message.start_pose, true);
+  set_pose(route.goal, message.goal_pose, false);
+  std::copy(route.uuid.begin(), route.uuid.end(), message.uuid.uuid.begin());
+  message.allow_modification = route.allow_modification;
+  for (const auto &section : route.route.sections) {
+    oss::type::autoware_planning_msgs::msg::LaneletSegment segment{};
+    segment.primitive_type.id = section.preferred_lanelet_id;
+    segment.primitive_type.primitive_type = "lane";
+    for (const auto id : section.primitive_lanelet_ids) {
+      oss::type::autoware_planning_msgs::msg::LaneletPrimitive primitive{};
+      primitive.id = id;
+      primitive.primitive_type = "lane";
+      segment.primitives.push_back(std::move(primitive));
+    }
+    message.segments.push_back(std::move(segment));
+  }
+  return message;
+}
+
 class RouteStatePublisher {
  public:
   RouteStatePublisher(SharedState &state, RouteStateService &service,
@@ -432,11 +558,15 @@ class RouteStatePublisher {
   void run() {
     std::optional<planning::RouteLifecycleState> last;
     unsigned ticks = 0;
+    unsigned route_ticks = 0;
+    std::optional<planning::RouteSelectorRoute> last_route;
     while (!stopping_) {
       planning::RouteSelectorState current;
+      std::optional<planning::RouteSelectorRoute> route;
       {
         std::lock_guard<std::mutex> lock(state_.mutex);
         current = state_.routes.state(planning::RouteChannel::Main);
+        route = state_.routes.route(planning::RouteChannel::Main);
       }
       if (!last || *last != current.value || ++ticks >= 10) {
         const double stamp = current.stamp_s > 0.0 ? current.stamp_s : nowSeconds();
@@ -450,6 +580,22 @@ class RouteStatePublisher {
           log_.LogWarn() << "Route state Event 10604 has no subscriber yet";
         last = current.value;
         ticks = 0;
+      }
+      if (route && !route->route.sections.empty()) {
+        const bool changed = !last_route || last_route->uuid != route->uuid ||
+            last_route->stamp_s != route->stamp_s ||
+            last_route->route.sections.size() != route->route.sections.size();
+        if (changed || ++route_ticks >= 10) {
+          const auto event = routeMessage(*route);
+          const auto sent = service_.planning_missionplanning_route.Send(event);
+          if (!sent.HasValue() && changed)
+            log_.LogWarn() << "LaneletRoute Event 10602 has no subscriber yet";
+          last_route = std::move(route);
+          route_ticks = 0;
+        }
+      } else {
+        last_route.reset();
+        route_ticks = 0;
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -529,6 +675,11 @@ class InputService {
   }
   void onSample(const oss::type::autoware_map_msgs::msg::LaneletMapBin &map) {
     std::lock_guard<std::mutex> lock(state_.mutex);
+    const bool duplicate = state_.map && state_.map->data == map.data &&
+        state_.map->header.frame_id == map.header.frame_id;
+    std::fprintf(stderr, "PLAA_MAP received bytes=%zu duplicate=%d\n",
+                 map.data.size(), duplicate ? 1 : 0);
+    if (duplicate) return;
     state_.map = map;
     ++state_.map_generation;
     state_.changed.notify_one();
@@ -599,8 +750,13 @@ class InputService {
 class FrameProducer {
  public:
   FrameProducer(SharedState &state, TrajectorySkeleton &trajectory,
+                adaptive::DiagnosticOutput &diagnostic_output,
+                adaptive::RouteVisualizationOutput &route_visualization,
                 ara::log::Logger &log)
-      : state_(state), trajectory_(trajectory), log_(log), worker_([this] { run(); }) {}
+      : state_(state), trajectory_(trajectory),
+        diagnostic_output_(diagnostic_output),
+        route_visualization_(route_visualization), log_(log),
+        worker_([this] { run(); }) {}
 
   void stop() {
     {
@@ -625,6 +781,11 @@ class FrameProducer {
   };
 
   void run() {
+    const char *timing_env = std::getenv("PLANNING_AA_TIMING");
+    const bool trace_timing = timing_env && std::string(timing_env) == "1";
+    const char *simulation_env = std::getenv("PLANNING_AA_SIMULATION");
+    const bool simulation = simulation_env && std::string(simulation_env) == "1";
+    std::fprintf(stderr, "PLAA_CONFIG simulation=%d\n", simulation ? 1 : 0);
     planning::PlanningFinalPipelineCore final_pipeline;
     final_pipeline.reset();
     std::unique_ptr<planning::PlanningPipelineMapAdapter> pipeline;
@@ -635,11 +796,14 @@ class FrameProducer {
     std::uint64_t incomplete_count = 0;
     std::uint64_t rejected_count = 0;
     bool sent_once = false;
+    std::string visualized_route_id;
+    auto last_visualized = std::chrono::steady_clock::time_point{};
     std::string map_frame_id;
     for (;;) {
       std::vector<std::uint8_t> map_data;
       bool map_changed = false;
       std::optional<Snapshot> snapshot;
+      std::chrono::steady_clock::time_point snapshot_taken;
       {
         std::unique_lock<std::mutex> lock(state_.mutex);
         state_.changed.wait(lock, [&] {
@@ -664,6 +828,7 @@ class FrameProducer {
                                       state_.objects, state_.traffic_signals,
                                       state_.velocity_limit,
                                       *state_.operation_mode, *route});
+            snapshot_taken = std::chrono::steady_clock::now();
           }
         }
       }
@@ -678,6 +843,9 @@ class FrameProducer {
         }
         if (!map_data.empty()) {
           try {
+            std::fprintf(stderr, "PLAA_MAP decode_start bytes=%zu generation=%llu\n",
+                         map_data.size(),
+                         static_cast<unsigned long long>(map_generation));
             pipeline = std::make_unique<planning::PlanningPipelineMapAdapter>(
                 map_data, std::vector<planning::BehaviorVelocityModule>{
                     planning::BehaviorVelocityModule::CrosswalkDefault,
@@ -700,10 +868,13 @@ class FrameProducer {
               }
             }
             log_.LogInfo() << "Lanelet map ready for live planning";
+            std::fprintf(stderr, "PLAA_MAP ready generation=%llu\n",
+                         static_cast<unsigned long long>(map_generation));
           } catch (const std::exception &error) {
             pipeline.reset();
             scenario_map.reset();
             log_.LogError() << "Cannot decode Lanelet map: " << error.what();
+            std::fprintf(stderr, "PLAA_MAP decode_failed error=%s\n", error.what());
           }
         }
       }
@@ -721,6 +892,7 @@ class FrameProducer {
       source.ego = ego;
       source.ego_speed_mps = ego.longitudinal_velocity_mps;
       planning::BehaviorVelocityMapInput context;
+      context.is_simulation = simulation;
       context.ego_x = ego.x;
       context.ego_y = ego.y;
       context.ego_velocity_mps = source.ego_speed_mps;
@@ -746,10 +918,24 @@ class FrameProducer {
       const planning::BehaviorGoalPose goal{
           route.goal.x, route.goal.y, route.goal.yaw_rad};
       try {
+        const auto planning_started = std::chrono::steady_clock::now();
         const auto planned = pipeline->onRouteFrame(
             source, route.route, context, cruise, {}, goal);
+        const auto route_planned = std::chrono::steady_clock::now();
         if (planned.pipeline.status != planning::PlanningPipelineStatus::Complete ||
             planned.pipeline.cruise_stopped.size() < 2) {
+          if (trace_timing) {
+            std::fprintf(stderr,
+                "PLAA_TIMING result=incomplete wall_s=%.6f odom_s=%.6f "
+                "odom_age_ms=%.1f prep_ms=%.1f route_ms=%.1f "
+                "ego_speed_mps=%.3f\n",
+                nowSeconds(), stamp, (nowSeconds() - stamp) * 1000.0,
+                std::chrono::duration<double, std::milli>(
+                    planning_started - snapshot_taken).count(),
+                std::chrono::duration<double, std::milli>(
+                    route_planned - planning_started).count(),
+                source.ego_speed_mps);
+          }
           if (++incomplete_count == 1 || incomplete_count % 100 == 0)
             log_.LogWarn() << "Route frame did not produce a lane trajectory";
           continue;
@@ -762,6 +948,21 @@ class FrameProducer {
         frame.ego_speed_mps = source.ego_speed_mps;
         frame.ego_acceleration_mps2 = context.ego_acceleration_mps2;
         frame.lane_driving = planned.pipeline.cruise_stopped;
+        const auto visualized_at = std::chrono::steady_clock::now();
+        if (frame.route_id != visualized_route_id ||
+            visualized_at - last_visualized >= std::chrono::seconds(1)) {
+          if (route_visualization_.send(frame.lane_driving)) {
+            visualized_route_id = frame.route_id;
+            last_visualized = visualized_at;
+            const auto &end = frame.lane_driving.back();
+            std::fprintf(stderr,
+                "PLAA_ROUTE points=%zu end_x=%.3f end_y=%.3f "
+                "goal_x=%.3f goal_y=%.3f end_goal_distance_m=%.3f\n",
+                frame.lane_driving.size(), end.x, end.y,
+                route.goal.x, route.goal.y,
+                std::hypot(end.x - route.goal.x, end.y - route.goal.y));
+          }
+        }
         frame.autonomous = snapshot->mode.mode ==
             oss::type::OperationModeState_mode::AUTONOMOUS;
         frame.control_enabled = snapshot->mode.is_autoware_control_enabled;
@@ -791,8 +992,50 @@ class FrameProducer {
             route.goal.x, route.goal.y,
             lane_ids);
         ++frame_count;
-        if (publishFinalFrame(final_pipeline, trajectory_, log_, frame,
-                              std::string(odom.header.frame_id.c_str()))) {
+        FinalFrameTiming timing;
+        const bool published = publishFinalFrame(final_pipeline, trajectory_,
+                              diagnostic_output_, log_, frame,
+                              std::string(odom.header.frame_id.c_str()),
+                              route.goal, !sent_once || frame_count % 100 == 0,
+                              &timing);
+        if (trace_timing) {
+          const double wall_s = nowSeconds();
+          std::fprintf(stderr,
+              "PLAA_TIMING result=%s frame=%llu wall_s=%.6f odom_s=%.6f "
+              "odom_age_ms=%.1f prep_ms=%.1f route_ms=%.1f final_ms=%.1f "
+              "conversion_ms=%.1f send_ms=%.1f total_ms=%.1f "
+              "smoother_ms=%.1f qp_first_ms=%.1f qp_retry_ms=%.1f "
+              "qp_first_iter=%d qp_iter=%d qp_points=%zu "
+              "qp_backend=%s qp_retried=%d qp_solved=%d "
+              "ego_speed_mps=%.3f ego_x=%.3f ego_y=%.3f\n",
+              published ? "sent" : "rejected",
+              static_cast<unsigned long long>(frame_count), wall_s, stamp,
+              (wall_s - stamp) * 1000.0,
+              std::chrono::duration<double, std::milli>(
+                  planning_started - snapshot_taken).count(),
+              std::chrono::duration<double, std::milli>(
+                  route_planned - planning_started).count(),
+              timing.pipeline_ms, timing.conversion_ms, timing.send_ms,
+              std::chrono::duration<double, std::milli>(
+                  std::chrono::steady_clock::now() - snapshot_taken).count(),
+              timing.smoother_ms, timing.qp_first_solve_ms,
+              timing.qp_retry_ms, timing.qp_first_iterations,
+              timing.qp_iterations, timing.qp_points,
+              timing.qp_backend == planning::JerkQpBackend::ProxQP ? "proxqp" : "admm",
+              timing.qp_retried ? 1 : 0, timing.qp_solved ? 1 : 0,
+              source.ego_speed_mps, ego.x, ego.y);
+        }
+        if (frame_count == 1 || frame_count % 50 == 0) {
+          const auto now = std::chrono::steady_clock::now();
+          log_.LogWarn() << "Planning frame timing: route_ms=" <<
+              std::chrono::duration<double, std::milli>(route_planned - planning_started).count()
+              << " final_ms=" << timing.pipeline_ms
+              << " conversion_ms=" << timing.conversion_ms
+              << " send_ms=" << timing.send_ms
+              << " total_ms=" <<
+              std::chrono::duration<double, std::milli>(now - planning_started).count();
+        }
+        if (published) {
           if (!sent_once || frame_count % 100 == 0)
             log_.LogInfo() << "Published final trajectory Event 12506";
           sent_once = true;
@@ -807,6 +1050,8 @@ class FrameProducer {
 
   SharedState &state_;
   TrajectorySkeleton &trajectory_;
+  adaptive::DiagnosticOutput &diagnostic_output_;
+  adaptive::RouteVisualizationOutput &route_visualization_;
   ara::log::Logger &log_;
   std::thread worker_;
 };
@@ -836,7 +1081,17 @@ bool runApplication(const sigset_t &shutdown_signals) {
     routes.StopOfferService();
     return false;
   }
-  FrameProducer producer(state, trajectory, log);
+  const char *diagnostic_target = std::getenv("PLANNING_AA_DIAGNOSTIC_TARGET");
+  adaptive::DiagnosticOutput diagnostic_output(
+      diagnostic_target ? diagnostic_target : "");
+  const char *route_visualization_target =
+      std::getenv("PLANNING_AA_ROUTE_VISUALIZATION_TARGET");
+  adaptive::RouteVisualizationOutput route_visualization(
+      route_visualization_target ? route_visualization_target : "");
+  if (diagnostic_target && !diagnostic_output.enabled())
+    log.LogWarn() << "Invalid PLANNING_AA_DIAGNOSTIC_TARGET; ROS diagnostics disabled";
+  FrameProducer producer(state, trajectory, diagnostic_output,
+                         route_visualization, log);
   bool reported = false;
   {
     ara::exec::ExecutionClient execution;

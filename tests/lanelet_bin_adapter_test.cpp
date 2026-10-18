@@ -644,6 +644,36 @@ int main(int argc, char **argv) {
   const std::vector<std::uint8_t> parking_bytes(
       parking_string.begin(), parking_string.end());
   planning::LaneletBinAdapter parking_adapter(parking_bytes);
+  std::string route_failure;
+  const auto off_center_goal = parking_adapter.routeBetweenCheckpoints(
+      {5010.0, 3.5, 0.0}, {5020.0, 2.1, 0.0}, false, &route_failure);
+  check(!off_center_goal &&
+            route_failure.find("Goal footprint exceeds") != std::string::npos,
+        "차량 외곽이 차로를 벗어나면 구체적인 거절 사유를 반환합니다");
+  const auto centered_goal = parking_adapter.routeBetweenCheckpoints(
+      {5010.0, 3.5, 0.0}, {5020.0, 3.5, 0.0}, false, &route_failure);
+  check(centered_goal && route_failure.empty(),
+        "유효한 목적지는 경로를 생성하고 이전 실패 사유를 지웁니다");
+  lanelet::LineString3d shoulder_right(900000408, {
+      lanelet::Point3d(900000409, 5005.0, 0.0, 0.0),
+      lanelet::Point3d(900000410, 5030.0, 0.0, 0.0)});
+  lanelet::Lanelet right_shoulder(900000411, other_right, shoulder_right);
+  right_shoulder.setAttribute("subtype", "road_shoulder");
+  parking_map.add(right_shoulder);
+  std::ostringstream shoulder_stream(std::ios::out | std::ios::binary);
+  {
+    boost::archive::binary_oarchive archive(shoulder_stream);
+    archive << parking_map;
+    archive << next_id;
+  }
+  const auto shoulder_string = shoulder_stream.str();
+  const std::vector<std::uint8_t> shoulder_bytes(
+      shoulder_string.begin(), shoulder_string.end());
+  planning::LaneletBinAdapter shoulder_adapter(shoulder_bytes);
+  const auto shoulder_goal = shoulder_adapter.routeBetweenCheckpoints(
+      {5010.0, 3.5, 0.0}, {5020.0, 2.1, 0.0}, false, &route_failure);
+  check(shoulder_goal && route_failure.empty(),
+        "경로 차로와 경계를 공유하는 갓길은 목적지 윤곽 검사에 포함합니다");
   planning::Trajectory out_of_lane_synthetic(31);
   std::vector<double> synthetic_times(31);
   for (std::size_t i = 0; i < out_of_lane_synthetic.size(); ++i) {

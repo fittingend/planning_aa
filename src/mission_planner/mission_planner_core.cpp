@@ -150,6 +150,7 @@ RouteSelectorStatus MissionPlannerCore::setRoute(
   candidate.start = ego_->pose;
   candidate.goal = request.goal;
   candidate.route = std::move(*planned);
+  candidate.goal.z = candidate.route.goal_height_m;
   candidate.allow_modification = request.allow_modification;
   candidate.stamp_s = request.stamp_s;
   if (autonomous && ego_ && ego_->speed_mps >= 0.01 &&
@@ -178,6 +179,7 @@ bool MissionPlannerCore::onModifiedGoal(
   }
   route_->route = *planned;
   route_->goal = goal;
+  route_->goal.z = planned->goal_height_m;
   events_.push_back({state_, route_});
   changeState(RouteLifecycleState::Set, now_s);
   return true;

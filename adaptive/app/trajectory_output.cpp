@@ -47,22 +47,14 @@ makeTrajectoryEvent(const planning::PlanningFinalResult &result,
   if (!setTime(event.header.stamp, stamp_s)) return std::nullopt;
   event.header.frame_id = frame_id;
   const auto &points = *result.validation->selected_trajectory;
-  double elapsed_s = 0.0;
   event.points.reserve(points.size());
   for (std::size_t i = 0; i < points.size(); ++i) {
     const auto &source = points[i];
     if (!finite(source)) return std::nullopt;
-    if (i != 0) {
-      const auto &previous = points[i - 1];
-      const double distance = std::hypot(source.x - previous.x,
-                                         source.y - previous.y);
-      const double mean_speed = 0.5 * (std::abs(source.longitudinal_velocity_mps) +
-                                       std::abs(previous.longitudinal_velocity_mps));
-      // The core has no point timestamps. Keep time monotonic at stops.
-      elapsed_s += std::max(0.1, distance / std::max(0.1, mean_speed));
-    }
     oss::type::autoware_planning_msgs::msg::TrajectoryPoint target{};
-    if (!setTime(target.time_from_start, elapsed_s)) return std::nullopt;
+    // The original planning_validator publishes zero for this field.
+    target.time_from_start.sec = 0;
+    target.time_from_start.nanosec = 0;
     target.pose.position.x = source.x;
     target.pose.position.y = source.y;
     target.pose.position.z = source.z;
@@ -70,6 +62,26 @@ makeTrajectoryEvent(const planning::PlanningFinalResult &result,
     target.pose.orientation.y = source.orientation_y;
     target.pose.orientation.z = source.orientation_z;
     target.pose.orientation.w = source.orientation_w;
+    // The ROS planner derives pitch and yaw from consecutive 3D points.
+    // Reconstruct that orientation after the rosless core's planar path work.
+    const auto &from = points[i == points.size() - 1 ? i - 1 : i];
+    const auto &to = points[i == points.size() - 1 ? i : i + 1];
+    const double dx = to.x - from.x;
+    const double dy = to.y - from.y;
+    const double dz = to.z - from.z;
+    const double horizontal = std::hypot(dx, dy);
+    if (horizontal > 1.0e-9) {
+      const double half_yaw = 0.5 * std::atan2(dy, dx);
+      const double half_pitch = 0.5 * std::atan2(dz, horizontal);
+      const double sy = std::sin(half_yaw);
+      const double cy = std::cos(half_yaw);
+      const double sp = std::sin(half_pitch);
+      const double cp = std::cos(half_pitch);
+      target.pose.orientation.x = -sy * sp;
+      target.pose.orientation.y = cy * sp;
+      target.pose.orientation.z = sy * cp;
+      target.pose.orientation.w = cy * cp;
+    }
     target.longitudinal_velocity_mps = source.longitudinal_velocity_mps;
     target.lateral_velocity_mps = source.lateral_velocity_mps;
     target.acceleration_mps2 = source.acceleration_mps2;

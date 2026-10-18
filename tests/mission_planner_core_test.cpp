@@ -31,6 +31,7 @@ int main() {
           if (goal.x < 0.0) return std::nullopt;
           MissionRoute route;
           route.sections.push_back({1, {1}});
+          route.goal_height_m = 5.0;
           return route;
         },
         [&](const RouteSelectorRoute &, const RouteSelectorRoute &,
@@ -56,8 +57,9 @@ int main() {
           "map and odometry must initialize route API");
     check(planner.handle(request, 4.0).success &&
               planner.state().value == RouteLifecycleState::Set &&
-              planner.route()->uuid.front() == 7,
-          "first waypoint route must be set");
+              planner.route()->uuid.front() == 7 &&
+              planner.route()->goal.z == 5.0,
+          "first waypoint route must use the map-refined goal height");
 
     request.goal.x = 20.0;
     check(planner.handle(request, 5.0).code ==

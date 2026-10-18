@@ -1929,15 +1929,21 @@ bool LaneletBinAdapter::isUrbanLane(std::int64_t lanelet_id) const {
 
 std::optional<MissionRoute> LaneletBinAdapter::routeBetweenCheckpoints(
     RouteCheckpoint start, RouteCheckpoint goal,
-    bool consider_no_drivable_lanes) const {
+    bool consider_no_drivable_lanes, std::string *failure_reason) const {
   return routeBetweenCheckpointsImpl(
-      start, goal, consider_no_drivable_lanes, true);
+      start, goal, consider_no_drivable_lanes, true, nullptr, failure_reason);
 }
 
 std::optional<MissionRoute> LaneletBinAdapter::routeBetweenCheckpointsImpl(
     RouteCheckpoint start, RouteCheckpoint goal,
     bool consider_no_drivable_lanes, bool validate_goal,
-    std::vector<std::int64_t> *path_lanelet_ids) const {
+    std::vector<std::int64_t> *path_lanelet_ids,
+    std::string *failure_reason) const {
+  if (failure_reason) failure_reason->clear();
+  const auto fail = [&](std::string message) -> std::optional<MissionRoute> {
+    if (failure_reason) *failure_reason = std::move(message);
+    return std::nullopt;
+  };
   for (const double value : {
            start.x, start.y, start.yaw_rad,
            start.z, goal.x, goal.y, goal.yaw_rad, goal.z}) {
@@ -1988,7 +1994,8 @@ std::optional<MissionRoute> LaneletBinAdapter::routeBetweenCheckpointsImpl(
     }
   }
   if (starts.empty() && nearest_start) starts.push_back(*nearest_start);
-  if (starts.empty() || !nearest_goal) return std::nullopt;
+  if (starts.empty() || !nearest_goal)
+    return fail("No road lanelet within 20 m of the start or goal.");
   bool goal_in_aligned_shoulder = false;
   for (const auto &lane : impl_->map.laneletLayer) {
     if (lane.attributeOr("subtype", std::string{}) != "road_shoulder" ||
@@ -2064,7 +2071,7 @@ std::optional<MissionRoute> LaneletBinAdapter::routeBetweenCheckpointsImpl(
       (!lanelet::geometry::inside(
            *nearest_goal, lanelet::BasicPoint2d(goal.x, goal.y)) ||
        headingDifference(goal.yaw_rad, goal_lane_yaw) >= 0.7853981633974483)) {
-    return std::nullopt;
+    return fail("Goal is outside a road lanelet or its heading differs from the lane by at least 45 degrees.");
   }
   std::optional<lanelet::routing::LaneletPath> selected_path;
   double best_angle = std::numeric_limits<double>::infinity();
@@ -2088,7 +2095,8 @@ std::optional<MissionRoute> LaneletBinAdapter::routeBetweenCheckpointsImpl(
     best_angle = angle;
     selected_path = route->shortestPath();
   }
-  if (!selected_path || selected_path->empty()) return std::nullopt;
+  if (!selected_path || selected_path->empty())
+    return fail("No connected route from the start lanelet to the goal lanelet.");
   if (consider_no_drivable_lanes && std::any_of(
           selected_path->begin(), selected_path->end(), [](const auto &lane) {
             return lane.attributeOr("no_drivable_lane", std::string{"no"}) == "yes";
@@ -2127,6 +2135,22 @@ std::optional<MissionRoute> LaneletBinAdapter::routeBetweenCheckpointsImpl(
       road_area.push_back(std::move(shape));
     };
     for (const auto &lane : *selected_path) {
+      // DefaultPlanner includes shoulder lanelets sharing either route boundary
+      // when it checks whether the goal vehicle footprint fits on the road.
+      for (const auto &other :
+           impl_->map.laneletLayer.findUsages(lane.leftBound())) {
+        if (other.rightBound() == lane.leftBound() &&
+            other.attributeOr("subtype", std::string{}) == "road_shoulder") {
+          append_lane(other);
+        }
+      }
+      for (const auto &other :
+           impl_->map.laneletLayer.findUsages(lane.rightBound())) {
+        if (other.leftBound() == lane.rightBound() &&
+            other.attributeOr("subtype", std::string{}) == "road_shoulder") {
+          append_lane(other);
+        }
+      }
       append_lane(lane);
     }
     std::set<lanelet::Id> visited_next;
@@ -2169,7 +2193,13 @@ std::optional<MissionRoute> LaneletBinAdapter::routeBetweenCheckpointsImpl(
     bg::model::multi_polygon<Polygon> outside;
     bg::difference(footprint_shape, road_area, outside);
     if (!outside.empty() && !goal_in_parking_lot &&
-        !goal_in_aligned_shoulder) return std::nullopt;
+        !goal_in_aligned_shoulder) {
+      std::ostringstream reason;
+      reason << "Goal footprint exceeds the drivable lanes by "
+             << bg::area(outside) << " m^2 (goal lanelet "
+             << nearest_goal->id() << ").";
+      return fail(reason.str());
+    }
   }
   std::set<lanelet::Id> route_ids;
   for (const auto &lane : *selected_path) {
@@ -2243,7 +2273,9 @@ std::optional<MissionRoute> LaneletBinAdapter::routeBetweenCheckpointsImpl(
 
 std::optional<MissionRoute> LaneletBinAdapter::routeThroughCheckpoints(
     const std::vector<RouteCheckpoint> &checkpoints,
-    bool consider_no_drivable_lanes) const {
+    bool consider_no_drivable_lanes,
+    std::string *failure_reason) const {
+  if (failure_reason) failure_reason->clear();
   if (checkpoints.size() < 2) {
     throw std::invalid_argument("경로 체크포인트는 두 개 이상 필요합니다");
   }
@@ -2253,8 +2285,12 @@ std::optional<MissionRoute> LaneletBinAdapter::routeThroughCheckpoints(
     std::vector<std::int64_t> section_path_ids;
     const auto section_route = routeBetweenCheckpointsImpl(
         checkpoints[i - 1], checkpoints[i], consider_no_drivable_lanes,
-        i + 1 == checkpoints.size(), &section_path_ids);
-    if (!section_route) return std::nullopt;
+        i + 1 == checkpoints.size(), &section_path_ids, failure_reason);
+    if (!section_route) {
+      if (failure_reason && failure_reason->empty())
+        *failure_reason = "No route through checkpoint " + std::to_string(i) + ".";
+      return std::nullopt;
+    }
     result.goal_height_m = section_route->goal_height_m;
     for (const auto id : section_path_ids) {
       if (path_ids.empty() || path_ids.back() != id) {
@@ -2262,7 +2298,10 @@ std::optional<MissionRoute> LaneletBinAdapter::routeThroughCheckpoints(
       }
     }
   }
-  if (path_ids.empty()) return std::nullopt;
+  if (path_ids.empty()) {
+    if (failure_reason) *failure_reason = "The route has no lanelets.";
+    return std::nullopt;
+  }
   const std::set<std::int64_t> path_id_set(path_ids.begin(), path_ids.end());
   std::set<std::int64_t> route_ids(path_ids.begin(), path_ids.end());
   for (const auto id : path_ids) {
@@ -2341,7 +2380,12 @@ std::optional<MissionRoute> LaneletBinAdapter::routeThroughCheckpoints(
   std::set<std::int64_t> section_ids;
   for (const auto &section : result.sections) {
     for (const auto id : section.primitive_lanelet_ids) {
-      if (!section_ids.insert(id).second) return std::nullopt;
+      if (!section_ids.insert(id).second) {
+        if (failure_reason)
+          *failure_reason = "The route loops through lanelet " +
+              std::to_string(id) + ".";
+        return std::nullopt;
+      }
     }
   }
   return result;

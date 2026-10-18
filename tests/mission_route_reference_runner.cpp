@@ -30,9 +30,11 @@ int main(int argc, char **argv) {
   int consider_no_drivable = 0;
   if (!(std::cin >> consider_no_drivable)) consider_no_drivable = 0;
   if (!(std::cin >> checkpoints.back().z)) checkpoints.back().z = 0.0;
+  std::string failure_reason;
   const auto route = adapter.routeThroughCheckpoints(
-      checkpoints, consider_no_drivable != 0);
+      checkpoints, consider_no_drivable != 0, &failure_reason);
   if (!route) {
+    if (!failure_reason.empty()) std::cerr << failure_reason << '\n';
     std::cout << 0 << '\n';
     return 0;
   }

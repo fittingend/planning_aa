@@ -88,6 +88,11 @@ struct RouteCheckpoint {
   double y = 0.0;
   double yaw_rad = 0.0;
   double z = 0.0;
+  double orientation_x = 0.0;
+  double orientation_y = 0.0;
+  double orientation_z = 0.0;
+  double orientation_w = 1.0;
+  bool has_orientation = false;
 };
 
 struct MissionRouteSection {
@@ -291,10 +296,12 @@ class LaneletBinAdapter {
   bool isUrbanLane(std::int64_t lanelet_id) const;
   std::optional<MissionRoute> routeBetweenCheckpoints(
       RouteCheckpoint start, RouteCheckpoint goal,
-      bool consider_no_drivable_lanes = false) const;
+      bool consider_no_drivable_lanes = false,
+      std::string *failure_reason = nullptr) const;
   std::optional<MissionRoute> routeThroughCheckpoints(
       const std::vector<RouteCheckpoint> &checkpoints,
-      bool consider_no_drivable_lanes = false) const;
+      bool consider_no_drivable_lanes = false,
+      std::string *failure_reason = nullptr) const;
   std::optional<IntersectionTrafficControlDistances>
   intersectionTrafficControlDistances(
       std::int64_t lanelet_id, double x, double y,
@@ -308,7 +315,8 @@ class LaneletBinAdapter {
   std::optional<MissionRoute> routeBetweenCheckpointsImpl(
       RouteCheckpoint start, RouteCheckpoint goal,
       bool consider_no_drivable_lanes, bool validate_goal,
-      std::vector<std::int64_t> *path_lanelet_ids = nullptr) const;
+      std::vector<std::int64_t> *path_lanelet_ids = nullptr,
+      std::string *failure_reason = nullptr) const;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

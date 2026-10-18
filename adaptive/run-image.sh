@@ -17,5 +17,9 @@ fi
 docker run --rm --init --stop-timeout 10 \
   --shm-size="${PLANNING_AA_SHM_SIZE:-2g}" \
   --network "${network}" --ip "${PLANNING_AA_IP:-192.168.100.93}" \
+  -e "PLANNING_AA_DIAGNOSTIC_TARGET=${PLANNING_AA_DIAGNOSTIC_TARGET:-}" \
+  -e "PLANNING_AA_ROUTE_VISUALIZATION_TARGET=${PLANNING_AA_ROUTE_VISUALIZATION_TARGET:-}" \
+  -e "PLANNING_AA_TIMING=${PLANNING_AA_TIMING:-0}" \
+  -e "PLANNING_AA_SIMULATION=${PLANNING_AA_SIMULATION:-0}" \
   --name planning-aa \
   "${image}" "$@"

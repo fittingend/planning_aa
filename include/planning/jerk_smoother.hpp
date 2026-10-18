@@ -24,6 +24,10 @@ struct JerkSmootherResult {
   JerkFilterStages stages;
   Trajectory optimization_input;
   JerkQpSolveResult qp_result;
+  double qp_first_solve_ms = 0.0;
+  double qp_retry_ms = 0.0;
+  int qp_first_iterations = 0;
+  bool qp_retried = false;
 };
 
 // 원본 apply의 필터, 재샘플링, QP, 결과 변환을 순서대로 실행합니다.

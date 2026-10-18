@@ -7,6 +7,8 @@ reference
 tests
 examples
 ros
-lib/proxsuite-devel
+lib/proxsuite-devel/*
+!lib/proxsuite-devel/include
+!lib/proxsuite-devel/package.xml
 **/__pycache__
 **/*.pyc
