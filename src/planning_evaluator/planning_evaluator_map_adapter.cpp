@@ -12,7 +12,12 @@ namespace planning {
 PlanningEvaluatorMapAdapter::PlanningEvaluatorMapAdapter(
     const std::vector<std::uint8_t> &map_data,
     PlanningEvaluatorParameters parameters)
-    : map_(map_data), core_(parameters) {}
+    : owned_map_(std::make_unique<LaneletBinAdapter>(map_data)),
+      map_(owned_map_.get()), core_(parameters) {}
+
+PlanningEvaluatorMapAdapter::PlanningEvaluatorMapAdapter(
+    const LaneletBinAdapter &map, PlanningEvaluatorParameters parameters)
+    : map_(&map), core_(parameters) {}
 
 PlanningEvaluatorResult PlanningEvaluatorMapAdapter::tick(
     PlanningEvaluatorInput input, const MissionRoute &route) {
@@ -22,7 +27,7 @@ PlanningEvaluatorResult PlanningEvaluatorMapAdapter::tick(
     for (const auto &section : route.sections) {
       for (const auto lane_id : section.primitive_lanelet_ids) {
         if (!seen.insert(lane_id).second) continue;
-        const auto centerline = map_.laneCenterline(lane_id);
+        const auto centerline = map_->laneCenterline(lane_id);
         double traveled = 0.0;
         for (std::size_t i = 1; i < centerline.size(); ++i) {
           const auto &a = centerline[i - 1];

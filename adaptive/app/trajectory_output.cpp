@@ -35,18 +35,13 @@ bool setTime(Time &target, double seconds) {
 }  // namespace
 
 std::optional<oss::type::autoware_planning_msgs::msg::Trajectory>
-makeTrajectoryEvent(const planning::PlanningFinalResult &result,
-                    double stamp_s, const std::string &frame_id) {
-  if (!result.validation || !result.validation->data_ready ||
-      !result.validation->checks.allValid() ||
-      !result.validation->selected_trajectory ||
-      result.validation->selected_trajectory->size() < 2 ||
-      frame_id.empty()) return std::nullopt;
+convertTrajectory(const planning::Trajectory &points,
+                  double stamp_s, const std::string &frame_id) {
+  if (points.size() < 2 || frame_id.empty()) return std::nullopt;
 
   oss::type::autoware_planning_msgs::msg::Trajectory event{};
   if (!setTime(event.header.stamp, stamp_s)) return std::nullopt;
   event.header.frame_id = frame_id;
-  const auto &points = *result.validation->selected_trajectory;
   event.points.reserve(points.size());
   for (std::size_t i = 0; i < points.size(); ++i) {
     const auto &source = points[i];
@@ -91,5 +86,21 @@ makeTrajectoryEvent(const planning::PlanningFinalResult &result,
     event.points.push_back(std::move(target));
   }
   return event;
+}
+
+std::optional<oss::type::autoware_planning_msgs::msg::Trajectory>
+makeTrajectoryEvent(const planning::PlanningFinalResult &result,
+                    double stamp_s, const std::string &frame_id) {
+  if (!result.validation || !result.validation->data_ready ||
+      !result.validation->checks.allValid() ||
+      !result.validation->selected_trajectory) return std::nullopt;
+  return convertTrajectory(*result.validation->selected_trajectory, stamp_s, frame_id);
+}
+
+std::optional<oss::type::autoware_planning_msgs::msg::Trajectory>
+makeSelectedTrajectoryEvent(const planning::PlanningFinalResult &result,
+                            double stamp_s, const std::string &frame_id) {
+  if (!result.selected) return std::nullopt;
+  return convertTrajectory(*result.selected, stamp_s, frame_id);
 }
 }  // namespace adaptive

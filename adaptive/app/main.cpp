@@ -6,14 +6,22 @@
 #include "oss/srv/MP2SCr/scr_si_missionplanner_skeleton.h"
 #include "oss/srv/MP2RS/rs_si_missionplanner_skeleton.h"
 #include "oss/srv/PV2SCr/scr_si_planningvalidator_skeleton.h"
+#include "oss/srv/SS2VS/vs_si_scenarioselector_skeleton.h"
+#include "oss/srv/AA2SCrTurn/scr_si_turncommand_skeleton.h"
+#include "oss/srv/AA2SCrHazard/scr_si_hazardcommand_skeleton.h"
+#include "oss/srv/AA2SCrMetrics/scr_si_planningmetrics_skeleton.h"
+#include "oss/srv/AA2SCrRemaining/scr_si_remainingdistance_skeleton.h"
 #include "planning/behavior_velocity_perception_bridge.hpp"
 #include "planning/lanelet_bin_adapter.hpp"
 #include "planning/planning_final_pipeline_core.hpp"
 #include "planning/planning_pipeline_map_adapter.hpp"
 #include "planning/planning_route_coordinator.hpp"
+#include "planning/planning_evaluator_map_adapter.hpp"
+#include "planning/remaining_distance_map_adapter.hpp"
 #include "diagnostic_output.hpp"
 #include "route_visualization_output.hpp"
 #include "trajectory_output.hpp"
+#include "behavior_signal_output.hpp"
 
 #include <algorithm>
 #include <atomic>
@@ -25,6 +33,7 @@
 #include <cstdlib>
 #include <exception>
 #include <iomanip>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -37,6 +46,11 @@ using InputProxy = oss::srv::SCr2MP::proxy::MP_SI_ServiceCreatorProxy;
 using RouteSkeleton = oss::srv::MP2SCr::skeleton::SCr_SI_missionplannerSkeleton;
 using RouteStateSkeleton = oss::srv::MP2RS::skeleton::RS_SI_missionplannerSkeleton;
 using TrajectorySkeleton = oss::srv::PV2SCr::skeleton::SCr_SI_planningvalidatorSkeleton;
+using ScenarioSkeleton = oss::srv::SS2VS::skeleton::VS_SI_scenarioselectorSkeleton;
+using TurnSkeleton = oss::srv::AA2SCrTurn::skeleton::SCr_SI_turncommandSkeleton;
+using HazardSkeleton = oss::srv::AA2SCrHazard::skeleton::SCr_SI_hazardcommandSkeleton;
+using MetricsSkeleton = oss::srv::AA2SCrMetrics::skeleton::SCr_SI_planningmetricsSkeleton;
+using RemainingSkeleton = oss::srv::AA2SCrRemaining::skeleton::SCr_SI_remainingdistanceSkeleton;
 
 #define INPUT_EVENTS(X) \
   X(clock) \
@@ -154,16 +168,86 @@ struct FinalFrameTiming {
 
 bool publishFinalFrame(planning::PlanningFinalPipelineCore &pipeline,
                        TrajectorySkeleton &trajectory,
+                       ScenarioSkeleton &scenario_trajectory,
+                       MetricsSkeleton &metrics_skeleton,
+                       RemainingSkeleton &remaining_skeleton,
+                       planning::PlanningEvaluatorMapAdapter &evaluator,
+                       planning::RemainingDistanceMapAdapter &remaining,
+                       const planning::MissionRoute &route,
+                       const std::vector<planning::PlanningPerceivedObject> &objects,
                        adaptive::DiagnosticOutput &diagnostic_output,
                        ara::log::Logger &log,
                        const planning::PlanningFinalFrame &frame,
                        const std::string &frame_id,
                        const planning::RouteCheckpoint &goal,
                        bool log_details,
+                       bool emit_auxiliary,
                        FinalFrameTiming *timing = nullptr) {
   const auto started = std::chrono::steady_clock::now();
   const auto result = pipeline.onFrame(frame);
   const auto planned = std::chrono::steady_clock::now();
+  if (emit_auxiliary) {
+  remaining.setRoute(route);
+  remaining.core().onEgo({frame.ego.x, frame.ego.y, 0.0, frame.ego.z});
+  remaining.core().onGoal(goal);
+  remaining.core().onVelocityLimit(frame.maximum_velocity_mps);
+  remaining.core().onScenario(result.scenario && result.scenario->current == planning::Scenario::Parking
+      ? planning::RemainingDistanceScenario::Parking
+      : planning::RemainingDistanceScenario::LaneDriving);
+  if (const auto value = remaining.core().tick()) {
+    oss::type::autoware_internal_msgs::msg::MissionRemainingDistanceTime sample{};
+    sample.remaining_distance = value->distance_m;
+    sample.remaining_time = value->time_s;
+    if (!remaining_skeleton.planning_mission_remaining_distance_time.Send(sample).HasValue())
+      log.LogError() << "Failed to send remaining distance Event 12521";
+  }
+  planning::PlanningEvaluatorInput metric_input;
+  metric_input.ego = frame.ego;
+  metric_input.ego_speed_mps = frame.ego_speed_mps;
+  metric_input.ego_acceleration_mps2 = frame.ego_acceleration_mps2;
+  metric_input.acceleration_stamp_s = frame.now_s;
+  if (result.validation && result.validation->selected_trajectory)
+    metric_input.trajectory = *result.validation->selected_trajectory;
+  metric_input.reference_trajectory = frame.lane_driving;
+  std::vector<std::pair<double, double>> object_centers;
+  object_centers.reserve(objects.size());
+  for (const auto &object : objects) object_centers.emplace_back(object.x, object.y);
+  metric_input.object_centers = std::move(object_centers);
+  const auto metric_result = evaluator.tick(std::move(metric_input), route);
+  oss::type::tier4_metric_msgs::msg::MetricArray metric_sample{};
+  metric_sample.stamp.sec = static_cast<std::int32_t>(frame.now_s);
+  metric_sample.stamp.nanosec = static_cast<std::uint32_t>(
+      (frame.now_s - static_cast<double>(metric_sample.stamp.sec)) * 1.0e9);
+  const auto add_metric = [&metric_sample](const std::string &name, double value,
+                                           bool scalar) {
+    oss::type::tier4_metric_msgs::msg::Metric metric{};
+    metric.name = name;
+    if (name == "ego_lane_info/lane_id") {
+      metric.value = std::to_string(static_cast<std::int64_t>(value));
+    } else if (scalar) {
+      metric.value = std::to_string(value);
+    } else {
+      std::ostringstream formatted;
+      formatted << std::setprecision(std::numeric_limits<double>::max_digits10)
+                << value;
+      metric.value = formatted.str();
+    }
+    metric_sample.metric_array.push_back(std::move(metric));
+  };
+  for (const auto &entry : metric_result.scalar_metrics)
+    add_metric(entry.first, entry.second, true);
+  for (const auto &entry : metric_result.metrics) {
+    add_metric(entry.first + "/min", entry.second.minimum, false);
+    add_metric(entry.first + "/max", entry.second.maximum, false);
+    add_metric(entry.first + "/mean", entry.second.mean, false);
+  }
+  if (!metrics_skeleton.planning_evaluator_metrics.Send(metric_sample).HasValue())
+    log.LogError() << "Failed to send evaluator metrics Event 12520";
+  if (const auto selected = adaptive::makeSelectedTrajectoryEvent(result, frame.now_s, frame_id)) {
+    const auto sent = scenario_trajectory.planning_scenarioplanning_scenarioselector_trajectory.Send(*selected);
+    if (!sent.HasValue()) log.LogError() << "Failed to send scenario trajectory Event 12908";
+  }
+  }
   if (result.validation)
     diagnostic_output.send(*result.validation, frame.now_s);
   const auto event = adaptive::makeTrajectoryEvent(result, frame.now_s, frame_id);
@@ -750,10 +834,15 @@ class InputService {
 class FrameProducer {
  public:
   FrameProducer(SharedState &state, TrajectorySkeleton &trajectory,
+                ScenarioSkeleton &scenario_trajectory,
+                TurnSkeleton &turn, HazardSkeleton &hazard,
+                MetricsSkeleton &metrics, RemainingSkeleton &remaining,
                 adaptive::DiagnosticOutput &diagnostic_output,
                 adaptive::RouteVisualizationOutput &route_visualization,
                 ara::log::Logger &log)
-      : state_(state), trajectory_(trajectory),
+      : state_(state), trajectory_(trajectory), scenario_trajectory_(scenario_trajectory),
+        turn_(turn), hazard_(hazard),
+        metrics_(metrics), remaining_(remaining),
         diagnostic_output_(diagnostic_output),
         route_visualization_(route_visualization), log_(log),
         worker_([this] { run(); }) {}
@@ -790,18 +879,25 @@ class FrameProducer {
     final_pipeline.reset();
     std::unique_ptr<planning::PlanningPipelineMapAdapter> pipeline;
     std::shared_ptr<planning::LaneletBinAdapter> scenario_map;
+    std::unique_ptr<planning::PlanningEvaluatorMapAdapter> evaluator;
+    std::unique_ptr<planning::RemainingDistanceMapAdapter> remaining_calculator;
     std::uint64_t map_generation = 0;
     std::uint64_t odometry_generation = 0;
     std::uint64_t frame_count = 0;
+    double last_aux_stamp_s = -std::numeric_limits<double>::infinity();
     std::uint64_t incomplete_count = 0;
     std::uint64_t rejected_count = 0;
     bool sent_once = false;
+    bool avoidance_active = false;
+    std::size_t last_avoidance_objects = 0;
+    std::size_t last_avoidance_inputs = 0;
     std::string visualized_route_id;
     auto last_visualized = std::chrono::steady_clock::time_point{};
     std::string map_frame_id;
     for (;;) {
       std::vector<std::uint8_t> map_data;
       bool map_changed = false;
+      std::string candidate_map_frame_id;
       std::optional<Snapshot> snapshot;
       std::chrono::steady_clock::time_point snapshot_taken;
       {
@@ -816,7 +912,7 @@ class FrameProducer {
           map_generation = state_.map_generation;
           if (state_.map) {
             map_data = state_.map->data;
-            map_frame_id = state_.map->header.frame_id.c_str();
+            candidate_map_frame_id = state_.map->header.frame_id.c_str();
           }
         }
         if (state_.odometry_generation != odometry_generation) {
@@ -833,20 +929,12 @@ class FrameProducer {
         }
       }
       if (map_changed) {
-        pipeline.reset();
-        scenario_map.reset();
-        final_pipeline.reset();
-        {
-          std::lock_guard<std::mutex> lock(state_.mutex);
-          state_.route_map.reset();
-          state_.routes.setMapReady(false, nowSeconds());
-        }
         if (!map_data.empty()) {
           try {
             std::fprintf(stderr, "PLAA_MAP decode_start bytes=%zu generation=%llu\n",
                          map_data.size(),
                          static_cast<unsigned long long>(map_generation));
-            pipeline = std::make_unique<planning::PlanningPipelineMapAdapter>(
+            auto next_pipeline = std::make_unique<planning::PlanningPipelineMapAdapter>(
                 map_data, std::vector<planning::BehaviorVelocityModule>{
                     planning::BehaviorVelocityModule::CrosswalkDefault,
                     planning::BehaviorVelocityModule::Walkway,
@@ -859,7 +947,15 @@ class FrameProducer {
                     planning::BehaviorVelocityModule::NoStoppingArea,
                     planning::BehaviorVelocityModule::StopSign,
                     planning::BehaviorVelocityModule::RunOut});
-            scenario_map = std::make_shared<planning::LaneletBinAdapter>(map_data);
+            auto next_map = std::make_shared<planning::LaneletBinAdapter>(map_data);
+            auto next_evaluator = std::make_unique<planning::PlanningEvaluatorMapAdapter>(*next_map);
+            auto next_remaining = std::make_unique<planning::RemainingDistanceMapAdapter>(*next_map);
+            pipeline = std::move(next_pipeline);
+            scenario_map = std::move(next_map);
+            evaluator = std::move(next_evaluator);
+            remaining_calculator = std::move(next_remaining);
+            map_frame_id = std::move(candidate_map_frame_id);
+            final_pipeline.reset();
             {
               std::lock_guard<std::mutex> lock(state_.mutex);
               if (state_.map_generation == map_generation) {
@@ -871,14 +967,22 @@ class FrameProducer {
             std::fprintf(stderr, "PLAA_MAP ready generation=%llu\n",
                          static_cast<unsigned long long>(map_generation));
           } catch (const std::exception &error) {
-            pipeline.reset();
-            scenario_map.reset();
             log_.LogError() << "Cannot decode Lanelet map: " << error.what();
             std::fprintf(stderr, "PLAA_MAP decode_failed error=%s\n", error.what());
           }
+        } else {
+          pipeline.reset();
+          evaluator.reset();
+          remaining_calculator.reset();
+          scenario_map.reset();
+          final_pipeline.reset();
+          map_frame_id.clear();
+          std::lock_guard<std::mutex> lock(state_.mutex);
+          state_.route_map.reset();
+          state_.routes.setMapReady(false, nowSeconds());
         }
       }
-      if (!snapshot || !pipeline || !scenario_map) continue;
+      if (!snapshot || !pipeline || !scenario_map || !evaluator || !remaining_calculator) continue;
       const auto &odom = snapshot->odometry;
       const double stamp = stampSeconds(odom.header.stamp);
       if (!std::isfinite(stamp) || stamp <= 0.0 || odom.header.frame_id.empty() ||
@@ -921,6 +1025,40 @@ class FrameProducer {
         const auto planning_started = std::chrono::steady_clock::now();
         const auto planned = pipeline->onRouteFrame(
             source, route.route, context, cruise, {}, goal);
+        if (cruise.objects.size() != last_avoidance_objects ||
+            planned.avoidance_perception_input_count != last_avoidance_inputs) {
+          const auto *first_object = cruise.objects.empty() ?
+              nullptr : &cruise.objects.front();
+          std::fprintf(stderr,
+              "PLAA_AVOIDANCE_INPUT objects=%zu selected=%zu candidates=%zu "
+              "first_x=%.3f first_y=%.3f first_class=%u first_speed_mps=%.3f "
+              "odom_s=%.6f\n",
+              cruise.objects.size(), planned.avoidance_perception_input_count,
+              planned.behavior_action ?
+                  planned.behavior_action->avoidance_candidate_count : 0,
+              first_object ? first_object->x : 0.0,
+              first_object ? first_object->y : 0.0,
+              first_object ? static_cast<unsigned>(first_object->classification) : 0U,
+              first_object ? std::hypot(
+                  first_object->velocity_x_mps,
+                  first_object->velocity_y_mps) : 0.0,
+              stamp);
+          last_avoidance_objects = cruise.objects.size();
+          last_avoidance_inputs = planned.avoidance_perception_input_count;
+        }
+        const bool avoiding = planned.behavior_action &&
+            planned.behavior_action->kind ==
+                planning::BehaviorRouteActionKind::StaticAvoidance;
+        if (avoiding != avoidance_active) {
+          std::fprintf(stderr,
+              "PLAA_AVOIDANCE active=%d objects=%zu candidates=%zu "
+              "route_id=%s odom_s=%.6f\n",
+              avoiding ? 1 : 0, planned.avoidance_perception_input_count,
+              planned.behavior_action ?
+                  planned.behavior_action->avoidance_candidate_count : 0,
+              routeId(route.uuid).c_str(), stamp);
+          avoidance_active = avoiding;
+        }
         const auto route_planned = std::chrono::steady_clock::now();
         if (planned.pipeline.status != planning::PlanningPipelineStatus::Complete ||
             planned.pipeline.cruise_stopped.size() < 2) {
@@ -940,6 +1078,22 @@ class FrameProducer {
             log_.LogWarn() << "Route frame did not produce a lane trajectory";
           continue;
         }
+        const bool emit_auxiliary = stamp - last_aux_stamp_s >= 0.1;
+        if (emit_auxiliary) {
+          last_aux_stamp_s = stamp;
+          const auto signal = adaptive::decideBehaviorSignals(
+              *scenario_map, route.route, checkpoint(odom.pose.pose),
+              source.ego_speed_mps, planned.behavior_action);
+          oss::type::adaptive_planning::msg::TurnCommand turn_sample{};
+          turn_sample.stamp = odom.header.stamp;
+          turn_sample.command = signal.turn;
+          oss::type::adaptive_planning::msg::HazardCommand hazard_sample{};
+          hazard_sample.stamp = odom.header.stamp;
+          hazard_sample.command = signal.hazard;
+          if (!turn_.planning_turn_indicators_cmd.Send(turn_sample).HasValue() ||
+              !hazard_.planning_hazard_lights_cmd.Send(hazard_sample).HasValue())
+            log_.LogWarn() << "Failed to send behavior signal commands";
+        }
         planning::PlanningFinalFrame frame;
         frame.now_s = stamp;
         frame.odometry_stamp_s = stamp;
@@ -951,14 +1105,17 @@ class FrameProducer {
         const auto visualized_at = std::chrono::steady_clock::now();
         if (frame.route_id != visualized_route_id ||
             visualized_at - last_visualized >= std::chrono::seconds(1)) {
-          if (route_visualization_.send(frame.lane_driving)) {
+          // Keep the global route marker on the unshifted mission path while
+          // the selected local path and final trajectory avoid an object.
+          if (route_visualization_.send(
+                  planned.route_goal_refined_path.points)) {
             visualized_route_id = frame.route_id;
             last_visualized = visualized_at;
-            const auto &end = frame.lane_driving.back();
+            const auto &end = planned.route_goal_refined_path.points.back();
             std::fprintf(stderr,
                 "PLAA_ROUTE points=%zu end_x=%.3f end_y=%.3f "
                 "goal_x=%.3f goal_y=%.3f end_goal_distance_m=%.3f\n",
-                frame.lane_driving.size(), end.x, end.y,
+              planned.route_goal_refined_path.points.size(), end.x, end.y,
                 route.goal.x, route.goal.y,
                 std::hypot(end.x - route.goal.x, end.y - route.goal.y));
           }
@@ -993,10 +1150,13 @@ class FrameProducer {
             lane_ids);
         ++frame_count;
         FinalFrameTiming timing;
-        const bool published = publishFinalFrame(final_pipeline, trajectory_,
+        const bool published = publishFinalFrame(final_pipeline, trajectory_, scenario_trajectory_,
+                              metrics_, remaining_, *evaluator, *remaining_calculator,
+                              route.route, cruise.objects,
                               diagnostic_output_, log_, frame,
                               std::string(odom.header.frame_id.c_str()),
                               route.goal, !sent_once || frame_count % 100 == 0,
+                              emit_auxiliary,
                               &timing);
         if (trace_timing) {
           const double wall_s = nowSeconds();
@@ -1050,6 +1210,11 @@ class FrameProducer {
 
   SharedState &state_;
   TrajectorySkeleton &trajectory_;
+  ScenarioSkeleton &scenario_trajectory_;
+  TurnSkeleton &turn_;
+  HazardSkeleton &hazard_;
+  MetricsSkeleton &metrics_;
+  RemainingSkeleton &remaining_;
   adaptive::DiagnosticOutput &diagnostic_output_;
   adaptive::RouteVisualizationOutput &route_visualization_;
   ara::log::Logger &log_;
@@ -1062,12 +1227,30 @@ bool runApplication(const sigset_t &shutdown_signals) {
   RouteService routes(state);
   RouteStateService route_state(state);
   TrajectorySkeleton trajectory(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_PV2SCr"});
+  ScenarioSkeleton scenario_trajectory(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_SS2VS"});
+  TurnSkeleton turn(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_AA2SCrTurn"});
+  HazardSkeleton hazard(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_AA2SCrHazard"});
+  MetricsSkeleton metrics(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_AA2SCrMetrics"});
+  RemainingSkeleton remaining(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_AA2SCrRemaining"});
   auto route_offer = routes.OfferService();
   auto state_offer = route_state.OfferService();
   auto trajectory_offer = trajectory.OfferService();
-  if (!route_offer.HasValue() || !state_offer.HasValue() || !trajectory_offer.HasValue()) {
+  auto scenario_offer = scenario_trajectory.OfferService();
+  auto turn_offer = turn.OfferService();
+  auto hazard_offer = hazard.OfferService();
+  auto metrics_offer = metrics.OfferService();
+  auto remaining_offer = remaining.OfferService();
+  if (!route_offer.HasValue() || !state_offer.HasValue() ||
+      !trajectory_offer.HasValue() || !scenario_offer.HasValue() ||
+      !turn_offer.HasValue() || !hazard_offer.HasValue() ||
+      !metrics_offer.HasValue() || !remaining_offer.HasValue()) {
     log.LogError() << "Could not offer planning services";
     if (trajectory_offer.HasValue()) trajectory.StopOfferService();
+    if (scenario_offer.HasValue()) scenario_trajectory.StopOfferService();
+    if (turn_offer.HasValue()) turn.StopOfferService();
+    if (hazard_offer.HasValue()) hazard.StopOfferService();
+    if (metrics_offer.HasValue()) metrics.StopOfferService();
+    if (remaining_offer.HasValue()) remaining.StopOfferService();
     if (state_offer.HasValue()) route_state.StopOfferService();
     if (route_offer.HasValue()) routes.StopOfferService();
     return false;
@@ -1077,6 +1260,11 @@ bool runApplication(const sigset_t &shutdown_signals) {
   if (!inputs.start()) {
     state_publisher.stop();
     trajectory.StopOfferService();
+    scenario_trajectory.StopOfferService();
+    turn.StopOfferService();
+    hazard.StopOfferService();
+    metrics.StopOfferService();
+    remaining.StopOfferService();
     route_state.StopOfferService();
     routes.StopOfferService();
     return false;
@@ -1090,7 +1278,8 @@ bool runApplication(const sigset_t &shutdown_signals) {
       route_visualization_target ? route_visualization_target : "");
   if (diagnostic_target && !diagnostic_output.enabled())
     log.LogWarn() << "Invalid PLANNING_AA_DIAGNOSTIC_TARGET; ROS diagnostics disabled";
-  FrameProducer producer(state, trajectory, diagnostic_output,
+  FrameProducer producer(state, trajectory, scenario_trajectory, turn, hazard,
+                         metrics, remaining, diagnostic_output,
                          route_visualization, log);
   bool reported = false;
   {
@@ -1103,6 +1292,11 @@ bool runApplication(const sigset_t &shutdown_signals) {
     producer.stop();
     state_publisher.stop();
     trajectory.StopOfferService();
+    scenario_trajectory.StopOfferService();
+    turn.StopOfferService();
+    hazard.StopOfferService();
+    metrics.StopOfferService();
+    remaining.StopOfferService();
     route_state.StopOfferService();
     routes.StopOfferService();
     return false;
@@ -1115,6 +1309,11 @@ bool runApplication(const sigset_t &shutdown_signals) {
   producer.stop();
   state_publisher.stop();
   trajectory.StopOfferService();
+  scenario_trajectory.StopOfferService();
+  turn.StopOfferService();
+  hazard.StopOfferService();
+  metrics.StopOfferService();
+  remaining.StopOfferService();
   route_state.StopOfferService();
   routes.StopOfferService();
   return wait_result == 0;

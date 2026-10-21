@@ -15,4 +15,9 @@ std::optional<oss::type::autoware_planning_msgs::msg::Trajectory>
 makeTrajectoryEvent(const planning::PlanningFinalResult &result,
                     double stamp_s, const std::string &frame_id);
 
+// Scenario selector publishes its selected lane/parking trajectory before smoothing.
+std::optional<oss::type::autoware_planning_msgs::msg::Trajectory>
+makeSelectedTrajectoryEvent(const planning::PlanningFinalResult &result,
+                            double stamp_s, const std::string &frame_id);
+
 }  // namespace adaptive

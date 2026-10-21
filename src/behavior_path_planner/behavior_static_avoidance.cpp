@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <iterator>
 #include <limits>
 #include <stdexcept>
@@ -311,7 +313,14 @@ staticAvoidanceObjectGeometry(
       reference, ego_x, ego_y, envelope);
   const auto overhang = staticAvoidanceEnvelopeOverhangDistances(
       reference, envelope, object_on_right);
-  if (!longitudinal || overhang.empty()) return std::nullopt;
+  const char *debug_value = std::getenv("PLANNING_AA_AVOIDANCE_DEBUG");
+  const bool debug = debug_value && debug_value[0] == '1';
+  if (!longitudinal || overhang.empty()) {
+    if (debug) std::fprintf(stderr,
+        "PLAA_AVOIDANCE_REJECT stage=geometry_span longitudinal=%d overhang=%zu\n",
+        longitudinal ? 1 : 0, overhang.size());
+    return std::nullopt;
+  }
   auto effective_margin = margin_input;
   std::optional<StaticAvoidanceBoundaryDistance> boundary_distance;
   if (boundary) {
@@ -328,7 +337,20 @@ staticAvoidanceObjectGeometry(
         boundary_distance->distance_m;
   }
   const auto margin = staticAvoidanceLateralMargin(effective_margin);
-  if (!margin) return std::nullopt;
+  if (!margin) {
+    if (debug) std::fprintf(stderr,
+        "PLAA_AVOIDANCE_REJECT stage=geometry_margin shoulder=%.3f "
+        "required=%.3f hard_bound=%.3f overhang=%.3f object_right=%d\n",
+        effective_margin.road_shoulder_distance_m,
+        effective_margin.vehicle_width_m +
+            (effective_margin.parked ?
+                 effective_margin.parked_lateral_hard_margin_m :
+                 effective_margin.lateral_hard_margin_m) +
+            effective_margin.hard_drivable_bound_margin_m,
+        effective_margin.hard_drivable_bound_margin_m,
+        overhang.front().lateral_m, object_on_right ? 1 : 0);
+    return std::nullopt;
+  }
   const double shift = staticAvoidanceShiftLength(
       object_on_right, overhang.front().lateral_m, *margin);
   return StaticAvoidanceObjectGeometry{
@@ -985,6 +1007,8 @@ std::optional<StaticAvoidanceSingleObjectPlan>
 planStaticAvoidanceSingleObject(
     const Trajectory &reference,
     const StaticAvoidanceSingleObjectInput &input) {
+  const char *debug_value = std::getenv("PLANNING_AA_AVOIDANCE_DEBUG");
+  const bool debug = debug_value && debug_value[0] == '1';
   if (reference.size() < 3) return std::nullopt;
   auto geometry = staticAvoidanceObjectGeometry(
       reference, input.ego_x, input.ego_y,
@@ -994,6 +1018,10 @@ planStaticAvoidanceSingleObject(
   if (!geometry || std::abs(geometry->desired_shift_m) < 1.0e-3 ||
       !staticAvoidanceShiftNecessary(
           input.object_on_right, geometry->desired_shift_m)) {
+    if (debug) std::fprintf(stderr,
+        "PLAA_AVOIDANCE_REJECT stage=geometry shift=%.3f object_right=%d\n",
+        geometry ? geometry->desired_shift_m : 0.0,
+        input.object_on_right ? 1 : 0);
     return std::nullopt;
   }
   auto feasibility_input = input.feasibility;
@@ -1010,6 +1038,14 @@ planStaticAvoidanceSingleObject(
   if (feasibility.reason !=
           StaticAvoidanceFeasibilityReason::Feasible ||
       feasibility.avoidance_distance_m <= 0.0) {
+    if (debug) std::fprintf(stderr,
+        "PLAA_AVOIDANCE_REJECT stage=feasibility reason=%d forward=%.3f "
+        "shift=%.3f avoid_distance=%.3f speed=%.3f\n",
+        static_cast<int>(feasibility.reason),
+        feasibility_input.object_longitudinal_m,
+        feasibility_input.desired_shift_m,
+        feasibility.avoidance_distance_m,
+        feasibility_input.avoidance_speed_mps);
     return std::nullopt;
   }
   auto outline_input = input.outline;
@@ -1025,7 +1061,13 @@ planStaticAvoidanceSingleObject(
       feasibility_input.minimum_distance_speed_mps;
   outline_input.target_shift_m = feasibility.shift_m;
   const auto outline = staticAvoidanceShiftOutline(outline_input);
-  if (!outline) return std::nullopt;
+  if (!outline) {
+    if (debug) std::fprintf(stderr,
+        "PLAA_AVOIDANCE_REJECT stage=outline forward=%.3f distance=%.3f shift=%.3f\n",
+        outline_input.object_longitudinal_m,
+        outline_input.avoidance_distance_m, outline_input.target_shift_m);
+    return std::nullopt;
+  }
   std::vector<double> arcs(reference.size(), 0.0);
   for (std::size_t index = 1; index < reference.size(); ++index) {
     arcs[index] = arcs[index - 1] +
@@ -1037,7 +1079,10 @@ planStaticAvoidanceSingleObject(
   if (ego_arc < 0.0) return std::nullopt;
   auto path = generateStaticAvoidancePath(
       reference, ego_arc, *outline, input.path_shift);
-  if (!path) return std::nullopt;
+  if (!path) {
+    if (debug) std::fprintf(stderr, "PLAA_AVOIDANCE_REJECT stage=path\n");
+    return std::nullopt;
+  }
   return StaticAvoidanceSingleObjectPlan{
       std::move(*geometry), feasibility, *outline, std::move(*path)};
 }

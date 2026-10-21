@@ -1594,5 +1594,68 @@ int main() {
   check(lane_overhang.behavior_action &&
             lane_overhang.avoidance_perception_input_count == 1,
         "중심은 차로 밖이어도 외곽이 현재 차로에 닿는 정차 객체를 전달합니다");
+
+  // The runtime calls onRouteFrame without an explicit action. A stationary
+  // pedestrian at the right lane edge must enter the approved avoidance path
+  // and change the trajectory consumed by the final planning pipeline.
+  planning::PlanningPipelineMapAdapter automatic_avoidance(mapBytes(), {});
+  auto pedestrian_frame = frame;
+  pedestrian_frame.timestamp_s = 20.0;
+  pedestrian_frame.ego.x = 5.0;
+  pedestrian_frame.ego.y = 0.0;
+  pedestrian_frame.ego_speed_mps = 5.0;
+  planning::PlanningCruisePerceptionFrame pedestrian;
+  pedestrian.stamp_s = 20.0;
+  pedestrian.objects.push_back(stationary_object);
+  pedestrian.objects.front().id = "stationary pedestrian";
+  pedestrian.objects.front().classification = 7;
+  pedestrian.objects.front().x = 80.0;
+  pedestrian.objects.front().y = -1.5;
+  pedestrian.objects.front().length_m = 0.7;
+  pedestrian.objects.front().width_m = 0.7;
+  const auto first_pedestrian_frame = automatic_avoidance.onRouteFrame(
+      pedestrian_frame, route, {}, pedestrian);
+  check(first_pedestrian_frame.pipeline.status ==
+            planning::PlanningPipelineStatus::Complete &&
+            first_pedestrian_frame.avoidance_perception_input_count == 0,
+        "최초 보행자 관측에서는 정차 시간 조건을 지킵니다");
+  pedestrian_frame.timestamp_s = 21.5;
+  pedestrian.stamp_s = 21.5;
+  const auto avoided_pedestrian = automatic_avoidance.onRouteFrame(
+      pedestrian_frame, route, {}, pedestrian);
+  check(avoided_pedestrian.behavior_action &&
+            avoided_pedestrian.behavior_action->kind ==
+                planning::BehaviorRouteActionKind::StaticAvoidance &&
+            avoided_pedestrian.avoidance_perception_input_count == 1 &&
+            avoided_pedestrian.pipeline.status ==
+                planning::PlanningPipelineStatus::Complete &&
+            first_pedestrian_frame.route_goal_refined_path.points.size() ==
+                avoided_pedestrian.route_goal_refined_path.points.size() &&
+            std::equal(
+                first_pedestrian_frame.route_goal_refined_path.points.begin(),
+                first_pedestrian_frame.route_goal_refined_path.points.end(),
+                avoided_pedestrian.route_goal_refined_path.points.begin(),
+                [](const auto &before, const auto &after) {
+                  return std::hypot(before.x - after.x,
+                                    before.y - after.y) < 1.0e-5;
+                }) &&
+            std::any_of(
+                avoided_pedestrian.pipeline.cruise_stopped.begin(),
+                avoided_pedestrian.pipeline.cruise_stopped.end(),
+                [](const auto &point) {
+                  return point.x > 75.0 && point.x < 85.0 && point.y > 0.2;
+                }),
+        "정차 보행자가 자동 회피 경로부터 제어용 궤적까지 연결됩니다");
+  pedestrian_frame.timestamp_s = 21.6;
+  planning::PlanningCruisePerceptionFrame missing_detection;
+  missing_detection.stamp_s = 21.6;
+  const auto compensated_pedestrian = automatic_avoidance.onRouteFrame(
+      pedestrian_frame, route, {}, missing_detection);
+  check(compensated_pedestrian.behavior_action &&
+            compensated_pedestrian.behavior_action->kind ==
+                planning::BehaviorRouteActionKind::StaticAvoidance &&
+            compensated_pedestrian.pipeline.status ==
+                planning::PlanningPipelineStatus::Complete,
+        "객체 관측이 잠깐 끊겨도 등록된 회피 경로를 유지합니다");
   return EXIT_SUCCESS;
 }

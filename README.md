@@ -147,7 +147,7 @@ HPC S자의 기록 중간 경로와 이전 스무더 출력을 넣은 **조건�
 
 `adaptive/`에는 PopcornSAR PARA **R20-11 x86_64** SDK를 사용한 실행 앱·EM/CM 매니페스트·Docker 정의가 있다. 단독 빌드를 위해 SDK와 필요한 생성 ARA 헤더·매니페스트를 `adaptive/vendor/`에 로컬 복사해 두었다. 이 디렉터리는 Git과 일반 Docker 빌드 컨텍스트에서 제외한다. 다른 설치본은 `PARA_SDK`와 `OSS_AP_SOURCE`로 지정할 수 있다. SDK 버전은 `R20-11_v26.04.03_native-linux-gcc`이다. SDK와 생성물의 라이선스가 복제·배포를 제한하므로 `adaptive/vendor/` 및 SDK 런타임을 포함한 이미지는 외부에 배포하지 않는다.
 
-`~/interface ROS2 to AA`에 적힌 실제 SOME/IP 계약의 연결 상태는 다음과 같다. 11개 입력 Event는 `oss-ap`의 `SCr2MP`(Service 4308)에서 ROS2→AA로 보낸다. `PlanningAA`는 Lanelet 지도·route·odometry를 주행 프레임 생산자에 연결하고, 인식 객체·교통 신호·가속도·속도 제한·운영 모드를 계산에 반영한다. route Method 3개(10801/10809/10812)는 `PlanningAA`가 Service 1817로 응답한다. Lanelet route는 전달받은 segment를 route 코어에 넘기며 waypoint route는 지도에서 경로를 탐색한다. **궤적 출력은 Event 12506(Service 2317) 하나**다. 최종 파이프라인이 검증한 궤적을 변환해 `Send()`하는 실행 경로를 연결했다. 실차·ROS2↔SOME/IP 종단 송신은 아직 검증되지 않았다.
+`~/interface ROS2 to AA`에 적힌 실제 SOME/IP 계약의 연결 상태는 다음과 같다. 11개 입력 Event는 `oss-ap`의 `SCr2MP`(Service 4308)에서 ROS2→AA로 보낸다. `PlanningAA`는 Lanelet 지도·route·odometry를 주행 프레임 생산자에 연결하고, 인식 객체·교통 신호·가속도·속도 제한·운영 모드를 계산에 반영한다. route Method 3개(10801/10809/10812)는 `PlanningAA`가 Service 1817로 응답한다. Lanelet route는 전달받은 segment를 route 코어에 넘기며 waypoint route는 지도에서 경로를 탐색한다. **궤적 출력은 Event 12506(Service 2317) 하나**다. 최종 파이프라인이 검증한 궤적을 변환해 `Send()`하는 실행 경로를 연결했다. KATECH 샘플 지도에서 ROS2→SOME/IP→AA→SOME/IP→ROS2 제어 궤적 수신과 정지 보행자 회피 주행을 확인했다. 실차 주행은 별도 검증이 필요하다.
 
 | 구간 | ROS2 ↔ AA | 구현 |
 | --- | --- | --- |

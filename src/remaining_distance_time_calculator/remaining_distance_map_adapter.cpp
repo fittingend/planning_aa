@@ -47,18 +47,26 @@ std::optional<double> arc(const std::vector<CrosswalkPoint> &line,
 
 RemainingDistanceMapAdapter::RemainingDistanceMapAdapter(
     const std::vector<std::uint8_t> &map_data)
-    : map_(map_data),
+    : owned_map_(std::make_unique<LaneletBinAdapter>(map_data)),
+      map_(owned_map_.get()),
+      core_([this](RouteCheckpoint ego, RouteCheckpoint goal) {
+        return routeDistance(ego, goal);
+      }) {}
+
+RemainingDistanceMapAdapter::RemainingDistanceMapAdapter(
+    const LaneletBinAdapter &map)
+    : map_(&map),
       core_([this](RouteCheckpoint ego, RouteCheckpoint goal) {
         return routeDistance(ego, goal);
       }) {}
 
 std::optional<double> RemainingDistanceMapAdapter::routeDistance(
     RouteCheckpoint ego, RouteCheckpoint goal) const {
-  const auto route = map_.routeBetweenCheckpoints(ego, goal);
+  const auto route = active_route_ ? active_route_ : map_->routeBetweenCheckpoints(ego, goal);
   if (!route || route->sections.empty()) return std::nullopt;
-  const auto first = map_.laneCenterline(
+  const auto first = map_->laneCenterline(
       route->sections.front().preferred_lanelet_id);
-  const auto last = map_.laneCenterline(
+  const auto last = map_->laneCenterline(
       route->sections.back().preferred_lanelet_id);
   const auto ego_arc = arc(first, ego);
   const auto goal_arc = arc(last, goal);
@@ -67,7 +75,7 @@ std::optional<double> RemainingDistanceMapAdapter::routeDistance(
     return *goal_arc - *ego_arc;
   double distance = length(first) - *ego_arc + *goal_arc;
   for (std::size_t i = 1; i + 1 < route->sections.size(); ++i)
-    distance += length(map_.laneCenterline(
+    distance += length(map_->laneCenterline(
         route->sections[i].preferred_lanelet_id));
   return distance;
 }

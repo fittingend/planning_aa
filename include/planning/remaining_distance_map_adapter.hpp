@@ -6,6 +6,7 @@
 #include "planning/remaining_distance_time_core.hpp"
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -16,14 +17,18 @@ class RemainingDistanceMapAdapter {
  public:
   explicit RemainingDistanceMapAdapter(
       const std::vector<std::uint8_t> &map_data);
+  explicit RemainingDistanceMapAdapter(const LaneletBinAdapter &map);
 
   RemainingDistanceTimeCore &core() { return core_; }
   const RemainingDistanceTimeCore &core() const { return core_; }
+  void setRoute(const MissionRoute &route) { active_route_ = route; }
   std::optional<double> routeDistance(RouteCheckpoint ego,
                                       RouteCheckpoint goal) const;
 
  private:
-  LaneletBinAdapter map_;
+  std::unique_ptr<LaneletBinAdapter> owned_map_;
+  const LaneletBinAdapter *map_;
+  std::optional<MissionRoute> active_route_;
   RemainingDistanceTimeCore core_;
 };
 

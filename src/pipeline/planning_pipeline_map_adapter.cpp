@@ -1478,6 +1478,17 @@ PlanningPipelineMapResult PlanningPipelineMapAdapter::onRouteFrame(
     }
   }
   const bool nominal_route = !action;
+  // The default lane-driving path must still be built from the route before
+  // the static avoidance module evaluates perceived objects. The original
+  // launch disables RTC for this module, so a feasible shift is approved
+  // without a separate operator command.
+  if (!action &&
+      (!cruise_perception.objects.empty() || !registered_avoidance_.empty())) {
+    action.emplace();
+    action->avoidance.emplace();
+    action->avoidance->approved = true;
+    action->avoidance->use_perception_objects = true;
+  }
   frame.behavior_path = {};
   frame.left_bound.clear();
   frame.right_bound.clear();

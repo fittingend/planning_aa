@@ -55,6 +55,28 @@ KATECH 실행에서는 브리지의 `SERVICECREATOR_TRACE_VALUES=1`을 켜서 `p
 
 `planning-aa.log`의 `PLAA_TIMING`에는 경로 계산, 최종 처리, 스무더, 첫 QP 풀이와 재시도 시간·반복 횟수가 프레임마다 기록된다. KATECH 실행에서 기본 활성화되며 `PLANNING_AA_TIMING=0`으로 끌 수 있다. RViz의 `ScenarioTrajectory`는 제어용 국소 궤적으로, 원본과 같은 후처리 최소 길이 30 m 때문에 목표 전에 끝나 보일 수 있다. 전체 경로는 Perception 컨테이너의 UDP 12508 진단 어댑터가 `/planning/mission_planning/route_marker`의 `RouteArea`에 별도로 표시한다. `route-visualization-bridge.log`에 발행된 경로 점 수와 끝 좌표를 남긴다. 이 마커는 제어용 궤적에 영향을 주지 않는다.
 
+### 정적 보행자 회피 확인
+
+직선 구간의 차선 가장자리에 정지 보행자를 두면, 별도의 행동 명령 없이 인식 객체를 정적 회피에 전달한다. 원본 설정과 같이 RTC 승인을 요구하지 않으며, 인식이 잠시 끊겨도 등록된 회피 이동을 이어간다. `RouteArea`에는 이동 전 전역 경로를, `ScenarioTrajectory`에는 회피를 적용한 제어 궤적을 표시한다. 원인을 추적할 때 `PLANNING_AA_AVOIDANCE_DEBUG=1 ./adaptive/run-katech-stack.sh`로 시작하면 `planning-aa.log`에 객체 선택과 회피 활성화 또는 거부 단계를 출력한다.
+
+샘플 지도에서 아래 명령은 이미 초기 위치와 목표를 설정한 스택에 정지 보행자를 5초 동안 발행하고, route UUID 유지 여부·궤적 끝점 이동량·차량 이동량을 JSON으로 출력한다. 앞서 `compare_runtime_probe.py`로 초기 위치 `(3648.0, 73505.0)`와 목표 `(3632.5, 73628.0)`을 설정할 수 있다.
+
+```sh
+docker exec -i planning-aa-control bash -c \
+  'source /opt/ros/humble/setup.bash && source /opt/autoware/setup.bash && python3 -u - --x 3645.6 --y 73545.0 --duration 5' \
+  < adaptive/static_avoidance_runtime_probe.py
+```
+
+2026-10-19 첫 실행에서는 보행자 정지 판정 후 `StaticAvoidance`가 활성화됐고 route UUID가 유지됐으며, 201개 제어 궤적을 수신했다. 정지 차량 앞 약 30 m까지 발행되는 국소 궤적 끝점은 기본 경로보다 최대 0.182 m 옆으로 이동했다. 보행자는 초기 차량 위치에서 약 40 m 앞에 있어 이 시점에는 회피 경로 전체가 국소 궤적 창에 들어오지 않았다. 초기 위치 `(3648.0, 73505.0)`에서는 Control 종방향 명령이 0 m/s, 기어 명령이 PARK로 남아 출발하지 않았다.
+
+초기 위치를 같은 차로 중심에 가까운 `(3648.46, 73505.0)`으로 바꾼 다음 같은 보행자를 계속 발행하고 Autonomous 모드를 켠 실행에서는 차량이 출발해 보행자 위치를 통과했다. 재실행한 검사 스크립트는 route UUID 유지, 제어 궤적 895개 수신, 차량 이동 `64.935 m`, 보행자 중심까지 최소 거리 `2.449 m`, 보행자 위치 통과를 기록했다. `planning-aa.log`에서 회피 활성화와 지속적인 최종 궤적 송신을 확인했다. 보행자 중심 `(3645.6, 73545.0)`을 지나는 시각의 차량 중심은 `(3643.123, 73545.065)`였고 속도는 `4.164 m/s`였다. 이 결과는 샘플 지도와 이 초기 위치·보행자 배치에서의 종단 주행 확인이다.
+
+2026-10-19 13:40 원본 `katech-autoware-new`의 Decision·Perception·Control 스택에서도 **같은 초기 위치 `(3648.46, 73505.0)`, 목표 `(3632.5, 73628.0)`, 정지 보행자 `(3645.6, 73545.0)`**를 시험했다. 6초 동안 route UUID가 유지됐고, 보행자 부근 행동 경로는 기본 경로보다 최대 `0.203 m`, 최종 궤적 끝점은 `0.188 m` 옆으로 이동했다. 이어 동일한 입력을 AA에 주입한 실행에서 `selected=1 candidates=1`, `PLAA_AVOIDANCE active=1`이 기록됐고 최종 궤적 끝점 이동량은 `0.181 m`였다. 이 수치는 정지 차량에서 국소 궤적 창에 들어온 회피 시작 부분만 비교한다.
+
+13:35의 별도 RViz 배치에서는 인식 객체가 AA에 들어와 `selected=1`까지 갔지만 `candidates=0`이므로 회피가 활성화되지 않았다. 당시 로그에는 객체의 x좌표 약 `3761.5`만 남았고 y좌표와 후보 거부 단계가 없어, 이 배치의 정확한 실패 조건은 판정할 수 없다. 후속 실행에서는 `PLANNING_AA_AVOIDANCE_DEBUG=1`을 켜면 거부 단계를 볼 수 있고, `PLAA_AVOIDANCE_INPUT`에는 첫 객체의 x·y·분류·속도도 남긴다.
+
+14:07 RViz 수동 배치에서는 차량 초기 위치 `(3730.405, 73677.742)`, 목표 `(3795.017, 73711.516)`, 인식된 보행자 `(3759.44, 73694.09)`였다. AA는 보행자를 정적 회피 대상으로 선택했지만 `candidates=0`이었다. 같은 좌표에 정지 보행자를 주입해 재현한 결과 `geometry_margin shoulder=1.508 required=2.696`으로, 보행자에서 회피 반대쪽 주행 가능 경계까지의 폭이 차량 폭·보행자 안전 여유·경계 여유의 합보다 작았다. AA의 최종 궤적은 보행자 앞에서 멈췄고 route UUID는 유지됐다. 원본 KATECH Decision·Perception·Control에도 같은 초기 위치·목표·보행자를 주입했으며, 원본도 행동 경로와 최종 궤적의 측방 이동 없이 보행자 앞에서 멈췄다. 이 배치는 원본에서도 회피 가능한 위치가 아니다. 이 조건을 통과시키려고 안전 여유를 줄이지 않는다. 성공한 재현 위치는 위의 `(3648.46, 73505.0)` 출발·`(3632.5, 73628.0)` 목표·`(3645.6, 73545.0)` 보행자 조합을 사용한다.
+
 이미지 기본 태그는 `katech-autoware-system-control:adsw-perception` 및 `katech-autoware-system-control:adsw-control`이다. 두 이미지는 `../katech-autoware/katech-autosare-new`에서 `./partition/partition_build.sh --repo katech-autoware-system-control --no-cuda --skip-vcs-update`로 빌드한다. Control 이미지에는 이동된 System이 포함된다. `KATECH_IMAGE_REPO` 또는 개별 `KATECH_PERCEPTION_IMAGE`, `KATECH_CONTROL_IMAGE`로 태그를 바꿀 수 있다. 브리지는 동일한 ROS 도메인과 `rmw_cyclonedds_cpp`를 사용한다. 지도 디렉터리는 perception·control 컨테이너의 `/autoware_map`에 읽기 전용으로 탑재한다. 스크립트는 이미지의 존재를 먼저 확인하며 이미지를 내려받지는 않는다.
 
 | 브리지 경계 | ROS 2 이름 | 제공/소비 |
@@ -67,12 +89,19 @@ KATECH 실행에서는 브리지의 `SERVICECREATOR_TRACE_VALUES=1`을 켜서 `p
 | 4308 velocity limit, lateral offset | `/planning/scenario_planning/max_velocity_default`, `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/input/lateral_offset` | 별도 발행자가 있어야 유입; 필수 입력 아님 |
 | 1817 route methods | `/planning/mission_planning/route_selector/main/{clear_route,set_lanelet_route,set_waypoint_route}` | 외부 경로 요청 → PlanningAA; 기존 `mission_planner/*` 별칭도 유지 |
 | 2317 trajectory event | `/planning/scenario_planning/trajectory` | PlanningAA → control |
+| 2516 selected trajectory event | `/planning/scenario_planning/scenario_selector/trajectory` | PlanningAA → bridge ROS |
+| 2340 evaluator event | `/planning/planning_evaluator/metrics` | PlanningAA → bridge ROS |
+| 2341 remaining distance event | `/planning/mission_remaining_distance_time` | PlanningAA → bridge ROS |
+| 2342 turn command event | `/planning/turn_indicators_cmd` | PlanningAA → bridge ROS |
+| 2343 hazard command event | `/planning/hazard_lights_cmd` | PlanningAA → bridge ROS |
 
 Control의 operation mode 노드는 실행되지만 실제 모드와 제어 허용 여부는 서비스 명령·시뮬레이터 상태에 따른다. Perception·control만 실행하면 route 요청과 `/planning/mission_planning/route` 발행자는 없다. 경로 요청을 별도로 보내야 PlanningAA가 궤적을 생성한다.
 
 2026-10-19에 원본 `partition/run_partitions.sh --headless`와 AA `run-katech-stack.sh`를 각각 실행하고 같은 차량 초기 위치 `(3648.0, 73505.0, 19.0)`와 목표 `(3632.5, 73628.0, 19.0)`를 `/initialpose3d` 및 main waypoint route 서비스에 보냈다. 두 실행 모두 route 요청이 성공했고, 출력 route의 lanelet 구간 `102 → 87`, 시작·목표 자세, 최종 trajectory의 점 수(171점)와 `time_from_start`가 일치했다. 수집한 trajectory 3건의 대응 점에서 최대 위치 차이는 `9.5e-6 m`, quaternion 성분 차이는 `7.6e-7`, 종방향 속도 차이는 `2.4e-7 m/s`였다. 비교에는 `compare_runtime_probe.py`와 `compare_runtime_results.py`를 사용했다. 매 실행에서 생성되는 route UUID와 header 시각은 비교 대상에서 제외했다.
 
-이 한 경로의 일치는 decision 전체 대체를 증명하지 않는다. 원본 실행의 ROS 그래프에는 발행자가 있었지만 AA 기본 배치에는 `mission_remaining_distance_time`, `scenario_selector/trajectory`, `planning_evaluator/metrics`, `modified_goal`, 방향지시등·비상등 명령 등의 발행자가 확인되지 않았다. 이 출력의 필요 여부와 실제 대체 경로는 별도로 검증해야 한다.
+2026-10-19에 같은 초기 위치와 목표로 추가 출력을 재검증했다. 원본과 AA 모두 선택 궤적 259점, 방향지시등 0, 비상등 1을 발행했다. 남은 거리는 원본 `123.97266581346074 m`, AA `123.97266581345065 m`였고 남은 시간은 각각 `29.72965552644317 s`, `29.72965607037186 s`였다. 최종 궤적 171점의 대응 위치 최대 차이는 `1.63e-9 m`, 종방향 속도 차이는 0이었다. 평가 지표의 차로 ID, 차로 내 거리·횡방향 거리, 차량 속도·가속도·저크도 일치했고 궤적 통계는 수치상 근접했다. 원본의 `modified_goal`은 이 경로에서 발행되지 않았다.
+
+이 한 경로만으로 decision 전체 대체를 증명할 수는 없다. 초기 평가 지표 표본에서는 원본이 42개, AA가 54개 항목을 냈지만 충분히 기다린 뒤에는 양쪽 모두 54개 항목을 발행했다. AA의 방향지시등 판단은 원본의 교차로 차로 속성, 경로 변경 및 후진 출발 규칙을 기반으로 하지만 원본의 모든 behavior 모듈 간 우선순위와 시점 조건을 아직 재현하지 않는다. 차로 변경, 회피, 주차, 실제 주행 신호에서 별도 검증이 필요하다.
 
 `oss-ap-planning-bridge`는 Service Creator만 빌드하고 이전 planning 앱의 실행·서비스 매니페스트도 배포에서 제외한다. `build-bridge-image.sh`는 이 전용 이미지를 입력으로 받아 매니페스트 수를 확인하는 선택 단계다. `build-image.sh`는 `planning-aa-adaptive:local`을 만든다. `run-stack.sh`는 `planning-aa-net`(`192.168.100.0/24`)을 만들고 브리지에 `.92`, PlanningAA에 `.93`을 할당한다. 두 컨테이너의 `/dev/shm`은 기본 2 GiB다. PlanningAA 쪽은 `PLANNING_AA_SHM_SIZE`로 조절할 수 있다. PlanningAA가 종료되면 스크립트가 브리지 컨테이너도 정지한다.
 

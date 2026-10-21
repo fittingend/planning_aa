@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <limits>
 #include <utility>
 
@@ -1092,9 +1094,43 @@ BehaviorRouteActionResult composeBehaviorRouteAction(
     const auto plan = planStaticAvoidanceWithRegisteredShifts(
         reference.points, ego_index, request.ego_linear_shift_m,
         registered, proposals, request.approved, request.shift_parameters);
+    std::optional<BehaviorPathLaneDeparture> departure;
     if (plan && !plan->active_shift_arcs.empty() &&
-        !firstBehaviorPathLaneDeparture(
-            plan->path, lane_polygons, request.vehicle)) {
+        ego_index < plan->path.size()) {
+      // The reference path includes points behind the ego and extends past
+      // the avoidance maneuver. Validate the vehicle footprint where this
+      // module actually changes the path, including the return and vehicle
+      // length. A departure on the unused rear reference must not reject a
+      // safe forward shift.
+      double maneuver_end_m = 0.0;
+      for (const auto &arc : plan->active_shift_arcs)
+        maneuver_end_m = std::max(maneuver_end_m, arc.end_m);
+      const double safety_horizon_m = maneuver_end_m +
+          request.vehicle.front_m + request.vehicle.back_m;
+      std::size_t end_index = ego_index;
+      double traveled_m = 0.0;
+      while (end_index + 1 < plan->path.size() &&
+             traveled_m < safety_horizon_m) {
+        traveled_m += std::hypot(
+            plan->path[end_index + 1].x - plan->path[end_index].x,
+            plan->path[end_index + 1].y - plan->path[end_index].y);
+        ++end_index;
+      }
+      const Trajectory maneuver_path(
+          plan->path.begin() + ego_index,
+          plan->path.begin() + end_index + 1);
+      departure = firstBehaviorPathLaneDeparture(
+          maneuver_path, lane_polygons, request.vehicle);
+    }
+    if (const char *debug = std::getenv("PLANNING_AA_AVOIDANCE_DEBUG");
+        debug && debug[0] == '1' && !proposals.empty() &&
+        (departure || !plan || plan->active_shift_arcs.empty())) {
+      std::fprintf(stderr,
+          "PLAA_AVOIDANCE_REJECT stage=selection plan=%d arcs=%zu departure=%d index=%zu\n",
+          plan ? 1 : 0, plan ? plan->active_shift_arcs.size() : 0,
+          departure ? 1 : 0, departure ? departure->segment_index : 0);
+    }
+    if (plan && !plan->active_shift_arcs.empty() && !departure) {
       result.path = withGeometry(reference, plan->path);
       result.kind = BehaviorRouteActionKind::StaticAvoidance;
       result.registered_shift_arcs = plan->registered_shift_arcs;

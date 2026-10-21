@@ -33,8 +33,20 @@ set(PLANNING_GEN "${CMAKE_CURRENT_BINARY_DIR}/generated/PlanningAA")
 file(REMOVE_RECURSE "${PLANNING_GEN}")
 file(MAKE_DIRECTORY "${PLANNING_GEN}/include" "${PLANNING_GEN}/manifest/interface/PlanningAA/AA")
 file(COPY "${OSS_ECU}/Exe_ServiceCreator/include/oss" DESTINATION "${PLANNING_GEN}/include")
-foreach(port IN ITEMS RPort_SCr2MP PPort_MP2SCr PPort_MP2RS PPort_PV2SCr)
-  if(port STREQUAL "PPort_PV2SCr")
+file(COPY "${OSS_ECU}/Exe_scenarioselector/include/oss/srv/SS2VS"
+     DESTINATION "${PLANNING_GEN}/include/oss/srv")
+foreach(family IN ITEMS AA2SCrMetrics AA2SCrRemaining AA2SCrTurn AA2SCrHazard)
+  file(COPY "${OSS_ECU}/Exe_ServiceCreator/include/oss/srv/${family}"
+       DESTINATION "${PLANNING_GEN}/include/oss/srv")
+endforeach()
+foreach(port IN ITEMS RPort_SCr2MP PPort_MP2SCr PPort_MP2RS PPort_PV2SCr PPort_SS2VS PPort_AA2SCrMetrics PPort_AA2SCrRemaining PPort_AA2SCrTurn PPort_AA2SCrHazard)
+  if(port MATCHES "^PPort_AA2SCr")
+    set(source "${CMAKE_CURRENT_SOURCE_DIR}/app/manifest/${port}.json")
+    set(old_app "PlanningAA")
+  elseif(port STREQUAL "PPort_SS2VS")
+    set(source "${OSS_ECU}/Exe_scenarioselector/manifest/interface/Exe_scenarioselector/AA/${port}.json")
+    set(old_app "Exe_scenarioselector")
+  elseif(port STREQUAL "PPort_PV2SCr")
     set(source "${OSS_ECU}/Exe_planningvalidator/manifest/interface/Exe_planningvalidator/AA/${port}.json")
     set(old_app "Exe_planningvalidator")
   else()
@@ -67,6 +79,14 @@ foreach(manifest IN LISTS cm_manifests)
 endforeach()
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/app/manifest/com/someip/CM_P_RS_missionplanner.json"
      DESTINATION "${CM_GEN}/manifest/com/someip")
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/app/manifest/com/someip/CM_P_VS_scenarioselector.json" scenario_cm)
+string(REPLACE "192.168.100.92" "192.168.100.93" scenario_cm "${scenario_cm}")
+file(WRITE "${CM_GEN}/manifest/com/someip/CM_P_VS_scenarioselector.json" "${scenario_cm}")
+foreach(family IN ITEMS Metrics Remaining Turn Hazard)
+  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/app/manifest/com/someip/CM_P_AA2SCr${family}.json" custom_cm)
+  string(REPLACE "192.168.100.92" "192.168.100.93" custom_cm "${custom_cm}")
+  file(WRITE "${CM_GEN}/manifest/com/someip/CM_P_${family}.json" "${custom_cm}")
+endforeach()
 
 # Install the platform manifests alongside the SDK runtime supplied at build time.
 set(PARA_PLATFORM TRUE)
@@ -101,10 +121,12 @@ set(PARA_APP_GEN_DIR "${PLANNING_GEN}")
 Para_App()
 
 add_executable(PlanningAA app/main.cpp app/trajectory_output.cpp
-  app/diagnostic_output.cpp app/route_visualization_output.cpp)
+  app/diagnostic_output.cpp app/route_visualization_output.cpp
+  app/behavior_signal_output.cpp)
 target_compile_features(PlanningAA PRIVATE cxx_std_17)
 target_link_libraries(PlanningAA PRIVATE planning_lanelet_bin_adapter pthread)
 target_include_directories(PlanningAA PRIVATE "${OSS_ECU}/Exe_missionplanner/include")
+target_include_directories(PlanningAA PRIVATE "${OSS_ECU}/Exe_motionvelocityplanner/include")
 install(FILES
   "$<TARGET_FILE:lanelet2_core>"
   "$<TARGET_FILE:lanelet2_routing>"

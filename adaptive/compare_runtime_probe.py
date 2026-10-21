@@ -14,6 +14,9 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from tier4_planning_msgs.srv import SetWaypointRoute
 from tier4_planning_msgs.msg import RouteState
+from autoware_internal_msgs.msg import MissionRemainingDistanceTime
+from tier4_metric_msgs.msg import MetricArray
+from autoware_vehicle_msgs.msg import TurnIndicatorsCommand, HazardLightsCommand
 
 
 def spin_until(node, predicate, seconds):
@@ -37,6 +40,7 @@ def main():
     parser.add_argument("--start-y", type=float, default=73505.0)
     parser.add_argument("--goal-x", type=float, default=3632.5)
     parser.add_argument("--goal-y", type=float, default=73628.0)
+    parser.add_argument("--yaw", type=float, default=None)
     parser.add_argument("--output", required=True)
     parser.add_argument("--wait", type=float, default=35.0)
     args = parser.parse_args()
@@ -47,6 +51,11 @@ def main():
     routes = []
     route_states = []
     trajectories = []
+    selected_trajectories = []
+    remaining = []
+    metrics = []
+    turns = []
+    hazards = []
     durable = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
     init_pub = node.create_publisher(PoseWithCovarianceStamped, "/initialpose3d", 10)
     node.create_subscription(Odometry, "/localization/kinematic_state",
@@ -58,16 +67,29 @@ def main():
         lambda msg: route_states.append(msg.state), durable)
     node.create_subscription(Trajectory, "/planning/scenario_planning/trajectory",
                              lambda msg: trajectories.append(msg), 10)
+    node.create_subscription(Trajectory, "/planning/scenario_planning/scenario_selector/trajectory",
+                             lambda msg: selected_trajectories.append(msg), 10)
+    node.create_subscription(MissionRemainingDistanceTime,
+                             "/planning/mission_remaining_distance_time",
+                             lambda msg: remaining.append(msg), 10)
+    node.create_subscription(MetricArray, "/planning/planning_evaluator/metrics",
+                             lambda msg: metrics.append(msg), 10)
+    node.create_subscription(TurnIndicatorsCommand, "/planning/turn_indicators_cmd",
+                             lambda msg: turns.append(msg.command), 10)
+    node.create_subscription(HazardLightsCommand, "/planning/hazard_lights_cmd",
+                             lambda msg: hazards.append(msg.command), 10)
     client = node.create_client(SetWaypointRoute,
         "/planning/mission_planning/route_selector/main/set_waypoint_route")
     result = {"input": vars(args), "initialization": False,
               "service_ready": False, "route_unset": False,
               "route_states": [], "response": None, "odometry": [],
-              "routes": [], "trajectories": []}
+              "routes": [], "trajectories": [], "selected_trajectories": [],
+              "remaining": [], "metrics": [], "turns": [], "hazards": []}
     try:
         # The sample map has MGRS-local coordinates. These points lie on the
         # northbound lanelet 102 and its successor 87.
-        yaw = math.atan2(73604.9 - 73496.1, 3635.7 - 3649.6)
+        yaw = (args.yaw if args.yaw is not None else
+               math.atan2(73604.9 - 73496.1, 3635.7 - 3649.6))
         init = PoseWithCovarianceStamped()
         init.header.frame_id = "map"
         init.pose.pose.position.x = args.start_x
@@ -83,8 +105,8 @@ def main():
         result["initialization"] = bool(odometry)
         result["service_ready"] = spin_until(node, client.service_is_ready, 20)
         result["route_unset"] = spin_until(
-            node, lambda: bool(route_states) and route_states[-1] == 2, 30)
-        if result["initialization"] and result["service_ready"] and result["route_unset"]:
+            node, lambda: bool(route_states) and route_states[-1] == 2, 5)
+        if result["initialization"] and result["service_ready"]:
             request = SetWaypointRoute.Request()
             request.header.frame_id = "map"
             request.header.stamp = node.get_clock().now().to_msg()
@@ -93,12 +115,19 @@ def main():
             request.goal_pose.position.z = 19.0
             request.goal_pose.orientation.z = init.pose.pose.orientation.z
             request.goal_pose.orientation.w = init.pose.pose.orientation.w
+            trajectories.clear()
+            selected_trajectories.clear()
+            remaining.clear()
+            metrics.clear()
+            turns.clear()
+            hazards.clear()
             future = client.call_async(request)
             if spin_until(node, future.done, 20):
                 status = future.result().status
                 result["response"] = {"success": status.success,
                                       "code": status.code, "message": status.message}
                 spin_until(node, lambda: len(trajectories) >= 3, args.wait)
+                spin_until(node, lambda: len(metrics) >= 25 and len(remaining) >= 5, 5)
                 spin_until(node, lambda: bool(routes), 5)
                 spin_until(node, lambda: 4 in route_states, 5)
         result["odometry"] = [pose_xy(msg.pose.pose) for msg in odometry[:3]]
@@ -123,6 +152,18 @@ def main():
                             "time_from_start_ns": point.time_from_start.sec * 1000000000 +
                                                   point.time_from_start.nanosec}
                            for point in msg.points]})
+        result["selected_trajectories"] = [{
+            "frame": msg.header.frame_id,
+            "count": len(msg.points),
+            "first": pose_xy(msg.points[0].pose) if msg.points else None,
+            "last": pose_xy(msg.points[-1].pose) if msg.points else None,
+        } for msg in selected_trajectories[-3:]]
+        result["remaining"] = [{"distance": msg.remaining_distance,
+                                "time": msg.remaining_time} for msg in remaining[-5:]]
+        result["metrics"] = [{m.name: m.value for m in msg.metric_array}
+                             for msg in metrics[-3:]]
+        result["turns"] = turns[-10:]
+        result["hazards"] = hazards[-10:]
     finally:
         with open(args.output, "w", encoding="utf-8") as file:
             json.dump(result, file, indent=2)

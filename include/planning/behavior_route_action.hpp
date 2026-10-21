@@ -91,12 +91,12 @@ struct BehaviorRouteAvoidancePerceptionParameters {
   double lateral_soft_margin_m = 0.5;
   double lateral_hard_margin_m = 0.2;
   double drivable_bound_margin_m = 0.3;
-  double maximum_lateral_jerk_mps3 = 1.0;
+  double maximum_lateral_jerk_mps3 = 3.0;
   double nominal_lateral_jerk_mps3 = 0.2;
-  double minimum_distance_jerk_mps3 = 1.0;
+  double minimum_distance_jerk_mps3 = 3.0;
   double nominal_avoidance_speed_mps = 8.33;
   double minimum_prepare_distance_m = 1.0;
-  double maximum_prepare_time_s = 3.0;
+  double maximum_prepare_time_s = 2.0;
 };
 
 // 원본 실행 설정의 객체 종류별 정차 속도·시간 임계값을 반환합니다.

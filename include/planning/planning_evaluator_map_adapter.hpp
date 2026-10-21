@@ -7,6 +7,7 @@
 #include "planning/planning_evaluator_core.hpp"
 
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 namespace planning {
@@ -16,13 +17,17 @@ class PlanningEvaluatorMapAdapter {
   explicit PlanningEvaluatorMapAdapter(
       const std::vector<std::uint8_t> &map_data,
       PlanningEvaluatorParameters parameters = {});
+  explicit PlanningEvaluatorMapAdapter(
+      const LaneletBinAdapter &map,
+      PlanningEvaluatorParameters parameters = {});
 
   PlanningEvaluatorResult tick(
       PlanningEvaluatorInput input, const MissionRoute &route);
   PlanningEvaluatorCore &core() { return core_; }
 
  private:
-  LaneletBinAdapter map_;
+  std::unique_ptr<LaneletBinAdapter> owned_map_;
+  const LaneletBinAdapter *map_;
   PlanningEvaluatorCore core_;
 };
 

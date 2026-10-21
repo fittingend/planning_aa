@@ -1,0 +1,25 @@
+{
+    "generation-by": "PARA, PopcornSAR",
+    "autosar-version": "R20-11",
+    "manifest-type": "service-instance-manifest",
+    "port-type": "pport",
+    "instance-specifier": "PlanningAA/AA/PPort_AA2SCrMetrics",
+    "service-protocol": "someip",
+    "service-name": "SCr_SI_planningmetrics",
+    "service-id": "2340",
+    "instance-id": "1",
+    "major-version": "41",
+    "minor-version": "2",
+    "client-id": "undefined",
+    "events": [
+        {
+            "name": "planning_evaluator_metrics",
+            "event-id": "12520",
+            "transport": "udp",
+            "max-segment-len": "0",
+            "separation-time": "0.0"
+        }
+    ],
+    "methods": [],
+    "fields": []
+}
