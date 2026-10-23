@@ -696,16 +696,26 @@ makeBehaviorRouteAvoidanceObjects(
         parameters.drivable_bound_margin_m;
     input.margin.hard_drivable_bound_margin_m =
         parameters.drivable_bound_margin_m;
-    const double ego_speed = std::max(
-        0.0, static_cast<double>(ego.longitudinal_velocity_mps));
-    const double avoid_speed = std::max(
+    const double ego_speed = std::abs(
+        static_cast<double>(ego.longitudinal_velocity_mps));
+    // Match the source avoidance constraint map. The nominal speed is used
+    // only for the nominal shift distance; preparation and jerk checks use
+    // the velocity bucket at the current ego speed.
+    constexpr std::array<double, 3> velocity_map{1.39, 4.17, 11.1};
+    double bucket_speed = velocity_map.front();
+    for (const double threshold : velocity_map) {
+      if (ego_speed < threshold) break;
+      bucket_speed = threshold;
+    }
+    const double avoid_speed = std::max(ego_speed, bucket_speed);
+    const double nominal_speed = std::max(
         ego_speed, parameters.nominal_avoidance_speed_mps);
     const double estimated_shift =
         parameters.vehicle_width_m / 2.0 +
         soft_margin + object.width_m / 2.0;
     const double nominal_distance = distanceForShift(
         estimated_shift, parameters.nominal_lateral_jerk_mps3,
-        avoid_speed);
+        nominal_speed);
     input.feasibility.front_constant_distance_m =
         parameters.front_overhang_m;
     input.feasibility.prepare_distance_m = std::max(
@@ -717,9 +727,10 @@ makeBehaviorRouteAvoidanceObjects(
         parameters.maximum_lateral_jerk_mps3;
     input.feasibility.minimum_distance_jerk_mps3 =
         parameters.minimum_distance_jerk_mps3;
-    input.feasibility.minimum_distance_speed_mps = avoid_speed;
+    input.feasibility.minimum_distance_speed_mps = velocity_map.front();
     input.feasibility.lateral_execution_threshold_m = 0.09;
     input.feasibility.best_effort_lateral_margin = true;
+    input.feasibility.best_effort_deceleration = true;
     input.feasibility.shorten_margin_immediately = true;
     input.outline.front_constant_distance_m =
         parameters.front_overhang_m;
@@ -1090,6 +1101,10 @@ BehaviorRouteActionResult composeBehaviorRouteAction(
       proposals.push_back(plan->outline.avoid);
       if (plan->outline.return_to_center)
         proposals.push_back(*plan->outline.return_to_center);
+    }
+    if (!proposals.empty()) {
+      proposals = trimStaticAvoidanceShiftArcs(
+          std::move(proposals), request.trim_parameters);
     }
     const auto plan = planStaticAvoidanceWithRegisteredShifts(
         reference.points, ego_index, request.ego_linear_shift_m,

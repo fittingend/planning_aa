@@ -114,6 +114,7 @@ struct BehaviorRouteAvoidanceRequest {
   bool use_ego_pose = true;
   bool use_perception_objects = false;
   BehaviorRouteAvoidancePerceptionParameters perception_parameters;
+  StaticAvoidanceTrimParameters trim_parameters;
   BehaviorPathShiftParameters shift_parameters;
   BehaviorPathVehicleFootprint vehicle;
 };

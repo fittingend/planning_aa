@@ -176,6 +176,11 @@ struct StaticAvoidanceAnchoredShiftArc {
   double end_shift_m = 0.0;
 };
 
+// 등록된 회피 이동선에서 현재 자차 위치의 횡이동량을 복원합니다.
+double staticAvoidanceRegisteredShiftAtEgo(
+    const Trajectory &reference, std::size_t ego_index,
+    const std::vector<StaticAvoidanceAnchoredShiftArc> &registered);
+
 // 이전 경로의 등록 이동선을 현재 경로의 최근접 점에 다시 배치하고 검사합니다.
 std::vector<StaticAvoidanceShiftArc>
 reprojectStaticAvoidanceRegisteredShiftArcs(

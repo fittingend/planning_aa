@@ -776,6 +776,47 @@ std::vector<StaticAvoidanceShiftArc> mergeStaticAvoidanceRegisteredShiftArcs(
   return future;
 }
 
+double staticAvoidanceRegisteredShiftAtEgo(
+    const Trajectory &reference, std::size_t ego_index,
+    const std::vector<StaticAvoidanceAnchoredShiftArc> &registered) {
+  if (reference.empty() || ego_index >= reference.size()) {
+    throw std::invalid_argument("등록 회피 이동량의 기준 경로가 유효하지 않습니다");
+  }
+  if (registered.empty()) return 0.0;
+  std::vector<double> arcs(reference.size(), 0.0);
+  for (std::size_t index = 1; index < reference.size(); ++index) {
+    arcs[index] = arcs[index - 1] + std::hypot(
+        reference[index].x - reference[index - 1].x,
+        reference[index].y - reference[index - 1].y);
+  }
+  const auto nearest_arc = [&](double x, double y) {
+    std::size_t nearest = 0;
+    double distance = std::numeric_limits<double>::infinity();
+    for (std::size_t index = 0; index < reference.size(); ++index) {
+      const double candidate = std::hypot(reference[index].x - x,
+                                          reference[index].y - y);
+      if (candidate < distance) {
+        distance = candidate;
+        nearest = index;
+      }
+    }
+    return arcs[nearest];
+  };
+  double shift = 0.0;
+  const double ego_arc = arcs[ego_index];
+  for (const auto &line : registered) {
+    const double start = nearest_arc(line.start_x, line.start_y);
+    const double end = nearest_arc(line.end_x, line.end_y);
+    if (end <= start || ego_arc < start) break;
+    if (ego_arc <= end) {
+      return line.start_shift_m + (line.end_shift_m - line.start_shift_m) *
+          (ego_arc - start) / (end - start);
+    }
+    shift = line.end_shift_m;
+  }
+  return shift;
+}
+
 std::vector<StaticAvoidanceShiftArc>
 reprojectStaticAvoidanceRegisteredShiftArcs(
     const Trajectory &reference, std::size_t ego_index,

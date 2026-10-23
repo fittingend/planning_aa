@@ -12,8 +12,11 @@ from autoware_perception_msgs.msg import (
     ObjectClassification, PredictedObject, PredictedObjects, Shape,
 )
 from autoware_planning_msgs.msg import LaneletRoute, Path, Trajectory
+from tier4_planning_msgs.msg import PathWithLaneId
 from nav_msgs.msg import Odometry
 from rclpy.qos import DurabilityPolicy, QoSProfile
+from autoware_adapi_v1_msgs.msg import OperationModeState
+from autoware_adapi_v1_msgs.srv import ChangeOperationMode
 
 
 def main():
@@ -22,6 +25,8 @@ def main():
     parser.add_argument("--y", type=float, required=True)
     parser.add_argument("--duration", type=float, default=8.0)
     parser.add_argument("--path-topic", default="")
+    parser.add_argument("--output", default="")
+    parser.add_argument("--engage-autonomous", action="store_true")
     args = parser.parse_args()
     rclpy.init()
     node = Node("planning_aa_static_avoidance_probe")
@@ -29,6 +34,8 @@ def main():
     odometry = []
     trajectories = []
     paths = []
+    modes = []
+    drive_trace = []
     node.create_subscription(
         LaneletRoute, "/planning/mission_planning/route",
         lambda message: routes.append(message),
@@ -39,16 +46,27 @@ def main():
         lambda message: odometry.append(message), 10,
     )
     node.create_subscription(
+        OperationModeState, "/api/operation_mode/state",
+        lambda message: modes.append(message),
+        QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL),
+    )
+    node.create_subscription(
         Trajectory, "/planning/scenario_planning/trajectory",
         lambda message: trajectories.append(message), 10,
     )
     if args.path_topic:
+        path_type = PathWithLaneId if args.path_topic.endswith(
+            "/path_with_lane_id") else Path
         node.create_subscription(
-            Path, args.path_topic, lambda message: paths.append(message), 10,
+            path_type, args.path_topic, lambda message: paths.append(message), 10,
         )
     publisher = node.create_publisher(
         PredictedObjects, "/perception/object_recognition/objects", 10,
     )
+    mode_client = node.create_client(
+        ChangeOperationMode, "/api/operation_mode/change_to_autonomous")
+    control_client = node.create_client(
+        ChangeOperationMode, "/api/operation_mode/enable_autoware_control")
     try:
         deadline = time.monotonic() + 5.0
         while time.monotonic() < deadline and not (
@@ -63,12 +81,18 @@ def main():
         trajectories.clear()
         baseline_path = paths[-1] if paths else None
         paths.clear()
+        position = lambda point: (point.point.pose.position
+                                  if hasattr(point, "point") else
+                                  point.pose.position)
         seen = 0
         max_stationary_endpoint_shift_m = 0.0
         max_stationary_path_shift_m = 0.0
         max_ego_displacement_m = 0.0
         minimum_center_distance_m = math.inf
         passed_object_line = False
+        mode_requests = []
+        last_mode_request = -math.inf
+        last_odometry_stamp = None
         origin = (
             odometry[-1].pose.pose.position.x,
             odometry[-1].pose.pose.position.y,
@@ -99,8 +123,43 @@ def main():
             publisher.publish(message)
             seen += 1
             rclpy.spin_once(node, timeout_sec=0.1)
+            elapsed = time.monotonic() - start
+            if (args.engage_autonomous and elapsed >= 2.0 and
+                    elapsed - last_mode_request >= 1.0 and
+                    not (modes and modes[-1].mode == OperationModeState.AUTONOMOUS
+                         and modes[-1].is_autoware_control_enabled)):
+                last_mode_request = elapsed
+                for name, client in (("autonomous", mode_client),
+                                     ("autoware_control", control_client)):
+                    if not client.service_is_ready():
+                        mode_requests.append({"time_s": round(elapsed, 2),
+                                              "service": name, "ready": False})
+                        continue
+                    future = client.call_async(ChangeOperationMode.Request())
+                    deadline = time.monotonic() + 2.0
+                    while time.monotonic() < deadline and not future.done():
+                        rclpy.spin_once(node, timeout_sec=0.05)
+                    status = future.result().status if future.done() else None
+                    mode_requests.append({
+                        "time_s": round(elapsed, 2), "service": name,
+                        "ready": True,
+                        "success": status.success if status else False,
+                        "code": status.code if status else None,
+                        "message": status.message if status else "timeout",
+                    })
             if odometry:
-                pose = odometry[-1].pose.pose.position
+                current = odometry[-1]
+                pose = current.pose.pose.position
+                stamp = (current.header.stamp.sec,
+                         current.header.stamp.nanosec)
+                if stamp != last_odometry_stamp:
+                    drive_trace.append([
+                        round(elapsed, 3), pose.x, pose.y,
+                        current.twist.twist.linear.x,
+                        modes[-1].mode if modes else None,
+                        modes[-1].is_autoware_control_enabled if modes else None,
+                    ])
+                    last_odometry_stamp = stamp
                 displacement = math.hypot(pose.x - origin[0], pose.y - origin[1])
                 max_ego_displacement_m = max(max_ego_displacement_m, displacement)
                 minimum_center_distance_m = min(
@@ -125,11 +184,11 @@ def main():
                 nearest = lambda path: min(
                     path.points,
                     key=lambda point: math.hypot(
-                        point.pose.position.x - args.x,
-                        point.pose.position.y - args.y),
-                ).pose.position
-                first = nearest(baseline_path)
-                last = nearest(paths[-1])
+                        position(point).x - args.x,
+                        position(point).y - args.y),
+                )
+                first = position(nearest(baseline_path))
+                last = position(nearest(paths[-1]))
                 max_stationary_path_shift_m = max(
                     max_stationary_path_shift_m,
                     math.hypot(last.x - first.x, last.y - first.y),
@@ -160,6 +219,14 @@ def main():
                             item.pose.position.y - ego.y))
             return point.longitudinal_velocity_mps
         summary = {
+            "engage_autonomous": args.engage_autonomous,
+            "mode_requests": mode_requests,
+            "last_operation_mode": {
+                "mode": modes[-1].mode,
+                "is_autoware_control_enabled": modes[-1].is_autoware_control_enabled,
+                "is_autonomous_mode_available": modes[-1].is_autonomous_mode_available,
+            } if modes else None,
+            "drive_trace": drive_trace,
             "published_objects": seen,
             "route_unchanged": bool(routes) and bytes(routes[-1].uuid.uuid) == route_uuid,
             "received_trajectories": len(trajectories),
@@ -185,7 +252,28 @@ def main():
             "last_odometry": [odometry[-1].pose.pose.position.x,
                               odometry[-1].pose.pose.position.y]
                 if odometry else None,
+            "baseline_trajectory": [
+                [point.pose.position.x, point.pose.position.y,
+                 point.longitudinal_velocity_mps]
+                for point in baseline.points
+            ],
+            "last_trajectory": [
+                [point.pose.position.x, point.pose.position.y,
+                 point.longitudinal_velocity_mps]
+                for point in trajectories[-1].points
+            ] if trajectories else [],
+            "baseline_behavior_path": [
+                [position(point).x, position(point).y]
+                for point in baseline_path.points
+            ] if baseline_path else [],
+            "last_behavior_path": [
+                [position(point).x, position(point).y]
+                for point in paths[-1].points
+            ] if paths else [],
         }
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as output:
+                json.dump(summary, output, indent=2)
         print(json.dumps(summary), flush=True)
     finally:
         node.destroy_node()

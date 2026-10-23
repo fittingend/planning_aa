@@ -2401,14 +2401,15 @@ PlanningPipelineMapResult PlanningPipelineMapAdapter::onRouteFrame(
         }
       }
     }
-    if (request.avoidance && request.avoidance->use_ego_pose) {
-      request.avoidance->ego_linear_shift_m = lateralOffset(
-          frame.behavior_path.points, frame.ego);
-    }
     if (!request.avoidance && !registered_avoidance_.empty()) {
       request.avoidance = BehaviorRouteAvoidanceRequest{};
-      request.avoidance->ego_linear_shift_m = lateralOffset(
-          frame.behavior_path.points, frame.ego);
+    }
+    if (request.avoidance && request.avoidance->use_ego_pose) {
+      request.avoidance->ego_linear_shift_m =
+          staticAvoidanceRegisteredShiftAtEgo(
+              frame.behavior_path.points,
+              nearestIndex(frame.behavior_path.points, frame.ego),
+              registered_avoidance_);
     }
     if (request.avoidance &&
         request.avoidance->use_perception_objects) {
