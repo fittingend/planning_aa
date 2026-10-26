@@ -1,6 +1,6 @@
 # Planning AA
 
-Autoware Decision Planning의 계산과 상태 처리를 ROS 메시지에 의존하지 않는 C++ 코어로 옮기는 저장소다. 목표 배포 형태는 Adaptive AUTOSAR 애플리케이션이다. **10개 rosbag의 6,085프레임에서 최종 궤적을 생성했고 Adaptive 통신과 실시간 주행 프레임·송신 경로를 구현했다. 원본과 점별 동등성·남은 코드 이관·ROS2↔SOME/IP 종단 실행 검증은 미완료다.**
+Autoware Decision Planning의 계산과 상태 처리를 ROS 메시지에 의존하지 않는 C++ 코어로 옮기는 저장소다. 목표 배포 형태는 Adaptive AUTOSAR 애플리케이션이다. **10개 rosbag의 6,085프레임에서 최종 궤적을 생성했고, KATECH Planning Simulation에서 ROS 2↔SOME/IP 종단 궤적 수신과 보행자 회피 주행을 확인했다. 전체 기능의 원본 동등성과 실차 주행은 검증되지 않았다.**
 
 ## 이번 작업 범위
 
@@ -41,7 +41,7 @@ route를 이 앱이 소유하면 아래 route 요청의 결과를 내부 현재 
 | `SetRtcApproval` | `request_id`, 대상 모듈·후보 ID, 승인/철회, 명령 시각 | 결과 코드, 적용 상태 |
 | `LoadPlanningModule` / `UnloadPlanningModule` | `request_id`, 행동/동작 속도 모듈 종류와 이름 | 결과 코드, 적용된 모듈 목록 |
 
-응답은 **요청 처리의 수락·실패**를 나타낸다. 그 뒤 변경된 route·상태·궤적은 별도 출력으로 발행한다. `request_id`로 중복 요청과 응답을 대응시키고, 동시 요청의 적용 순서·timeout·오류 코드를 정한다. 현재 `PlanningRouteCoordinator`와 일부 모듈 적재·해제 코어는 있으나 Adaptive 요청/응답 어댑터는 없다.
+응답은 **요청 처리의 수락·실패**를 나타낸다. 그 뒤 변경된 route·상태·궤적은 별도 출력으로 발행한다. `request_id`로 중복 요청과 응답을 대응시키고, 동시 요청의 적용 순서·timeout·오류 코드를 정한다. 현재 실행 앱은 `ClearRoute`와 lanelet/waypoint route Method를 연결했다. `UpdateGoal`, `SetRtcApproval`, 모듈 적재·해제 Method는 아직 연결되지 않았다.
 
 ### Out: 발행 데이터
 
@@ -71,6 +71,37 @@ route를 이 앱이 소유하면 아래 route 요청의 결과를 내부 현재 
 ## 소스 구조
 
 `src`는 원본 Autoware Planning의 기능 경계를 따라 정리했다. `behavior_path_planner`, `behavior_velocity_planner`, `motion_velocity_planner`, `mission_planner`가 주요 계산 모듈이다. 행동 속도 안의 횡단보도·교차로·돌발진입 등은 각 하위 폴더에 모았다. 그 밖에 `path_optimizer`, `path_smoother`, `velocity_smoother`, `obstacle_cruise_planner`, `planning_validator`, `pipeline` 등이 있다. 지도·포인트클라우드 변환은 `adapters`에 두었으며, 공개 헤더는 기존 `include/planning`에 있다. 이 정리는 파일 위치만 바꾼 것으로 계산 동작과 이관 완료 범위에는 영향을 주지 않는다.
+
+## Adaptive AUTOSAR 애플리케이션 구현
+
+현재 실행 앱은 위의 외부 계약 초안 전체가 아니라 [`adaptive/app/main.cpp`](adaptive/app/main.cpp)의 **`PlanningAA` 단일 프로세스**다. Autoware Planning의 계산은 ROS 2 타입과 노드에 의존하지 않는 C++ 코어로 옮기고, 앱 경계에서 생성된 ARA 타입과 `ara::com` 프록시·스켈레톤으로 변환한다. ROS 2와 SOME/IP 사이의 토픽·서비스 변환은 별도 `oss-ap-planning-bridge`의 `Exe_ServiceCreator`가 맡는다. 이 브리지는 원본 `oss-ap`를 직접 변경하지 않고 PlanningAA에 필요한 서비스만 제공한다.
+
+```text
+Autoware Perception·Control (ROS 2)
+    ↕ ROS 2 토픽·route 서비스
+Exe_ServiceCreator 브리지 (ROS 2 ↔ SOME/IP)
+    ↕ ara::com Event·Method
+PlanningAA (EM/CM 관리 프로세스)
+    └─ route 코어 → 행동 경로·행동 속도 → 경로 최적화·동작 속도
+       → 장애물 순항·정지·감속 → 최종 속도 평활화·검증
+```
+
+### 통신과 계획 프레임
+
+| 단계 | 실제 구현 |
+| --- | --- |
+| 입력 수신 | `RPort_SCr2MP` 프록시가 Service 4308의 **11개 Event**를 구독한다. 지도, 차량 위치·가속도, 인식 객체, 교통 신호, 운영 모드, 속도 제한 등의 최근 샘플을 스레드 간 공유 상태에 보관한다. 점군·점유 격자·lateral offset은 수신하지만 현재 주행 계산에는 모두 연결되지 않았다. |
+| 경로 명령 | `PPort_MP2SCr` 스켈레톤이 Service 1817의 clear/lanelet/waypoint route Method에 응답한다. waypoint 요청은 해독한 Lanelet 지도에서 경로를 찾고, 경로·상태는 `PPort_MP2RS`의 Event 10602/10604로 발행한다. |
+| 계획 계산 | 지도, route, odometry, 운영 모드가 준비되면 새 odometry를 기준으로 작업 스레드가 입력 스냅샷을 만들고 `PlanningPipelineMapAdapter::onRouteFrame()`을 실행한다. Lanelet 경로, 행동 경로·속도, 인식 객체 회피, 최적화, 동작 속도, 장애물 순항·정지를 계산한 뒤 `PlanningFinalPipelineCore`에서 최종 궤적을 평활화·검증한다. |
+| 출력 | 유효성 검사에 통과한 궤적만 `PPort_PV2SCr`의 **Service 2317, Event 12506**으로 보낸다. 브리지가 이를 `/planning/scenario_planning/trajectory`로 발행해 Control이 소비한다. 선택 궤적, 평가 지표, 남은 거리·시간, 방향지시등·비상등은 별도 Event로 발행한다. 검증이 실패한 프레임의 최종 궤적은 보내지 않는다. |
+
+입력 콜백은 최신 샘플을 갱신하고 계획 계산은 별도 작업 스레드에서 수행한다. 지도 바이너리는 [`LaneletBinAdapter`](include/planning/lanelet_bin_adapter.hpp)가 해독하며, 최종 궤적의 위치·자세·속도 등을 [`trajectory_output.cpp`](adaptive/app/trajectory_output.cpp)가 생성된 ARA 메시지 타입으로 변환한다. `PlanningAA`는 ROS 2 궤적 토픽을 직접 발행하지 않는다. 구체적인 포트와 토픽 대응은 [Adaptive 실행 문서](adaptive/README.md#현재-인터페이스)를 참조한다.
+
+### 실행 수명주기와 배포
+
+[`adaptive/CMakeLists.txt`](adaptive/CMakeLists.txt)는 PARA SDK, 생성된 ARA 통신 헤더·매니페스트, ROS 비의존 계획 코어, Lanelet 바이너리 어댑터와 ProxQP를 묶어 `PlanningAA`를 빌드한다. 실행 매니페스트는 **CM이 Running 상태가 된 뒤** 앱을 시작하도록 지정한다. 앱은 `ara::core::Initialize()` 후 서비스를 제공하고 입력 서비스를 찾은 다음 `ara::exec::ExecutionClient`로 Running을 보고한다. 종료 신호를 받으면 구독과 서비스 제공을 해제하고 `ara::core::Deinitialize()`를 호출한다. 컨테이너의 진입점은 EM을 실행하며, EM이 CM과 `PlanningAA`를 관리한다.
+
+현재 Docker 빌드는 **x86_64 PARA R20-11 SDK**와 같은 아키텍처의 브리지 이미지를 사용한다. KATECH 통합 실행은 Perception·Control·브리지·PlanningAA 네 컨테이너를 같은 Docker 네트워크와 ROS 도메인에서 시작한다. 원본 Decision 컨테이너는 실행하지 않는다. ARM64 보드용 SDK와 두 Adaptive 이미지의 ARM64 빌드는 아직 준비되지 않았다. 빌드·실행 명령 및 로그 위치는 [아래 절](#adaptive-autosar-컨테이너와-oss-ap-브리지)에 있다.
 
 ## 구현과 검증 상태
 
@@ -153,9 +184,11 @@ HPC S자의 기록 중간 경로와 이전 스무더 출력을 넣은 **조건�
 | --- | --- | --- |
 | clock·localization·지도·perception·외부 속도·운영 모드, Event 11개 | ROS2 → `oss-ap` → `PlanningAA` | 브리지 송신과 AA 구독·최신 샘플 보관 |
 | clear/lanelet/waypoint route, Method 3개 | ROS2 → `oss-ap` → `PlanningAA` | `mission_planner/*`와 `route_selector/main/*` 이름 제공, 지도 기반 waypoint 경로 탐색 |
-| final trajectory, Event 12506 | `PlanningAA` → `oss-ap` → ROS2 | route 기반 주행 프레임 생성, 검증, 변환·송신 경로 연결. 종단 실행 미검증 |
+| final trajectory, Event 12506 | `PlanningAA` → `oss-ap` → ROS2 | route 기반 주행 프레임 생성, 검증, 변환·송신 경로 연결. KATECH 샘플 지도·Planning Simulation에서 종단 수신과 주행 확인 |
 
 두 컨테이너는 Docker 네트워크 `192.168.100.0/24`에서 각각 `.92`(브릿지)와 `.93`(`PlanningAA`)을 사용한다. 별도 `oss-ap-planning-bridge` 복사본은 `Exe_ServiceCreator`만 빌드하고 이전 planning 앱의 매니페스트도 배포에서 제외한다. 원본 `oss-ap` 저장소는 수정하지 않는다.
+
+브리지와 `PlanningAA`를 **한 컨테이너의 EM·CM** 아래 실행하려면 두 이미지를 빌드한 뒤 `./adaptive/build-integrated-image.sh`와 `./adaptive/run-integrated.sh`를 사용한다. 통합 이미지에는 두 앱이 별도 프로세스로 설치되고 CM은 `.92` 주소 하나를 사용한다. KATECH 전체 스택은 `PLANNING_AA_INTEGRATED=1 ./adaptive/run-katech-stack.sh`로 시작한다. 자세한 내용은 [통합 실행 절](adaptive/README.md#브리지와-planningaa를-한-컨테이너에서-실행)에 있다.
 
 ```sh
 cd ../oss-ap-planning-bridge
@@ -177,7 +210,7 @@ cmake --build build-adaptive -j 4
 cmake --install build-adaptive --component Standalone
 ```
 
-이 빌드는 지도 어댑터와 ProxQP를 끈다. 현재 지도 메시지의 내용은 해독하지 않고 비어 있지 않은지만 확인한다. perception 샘플도 최신값으로 보관할 뿐 계산 코어에 변환해 넣지 않는다. 따라서 이미지가 만들어져도 실제 궤적이 발행되지는 않는다. 지도·점군·점유 격자의 UDP 이벤트는 64KiB를 넘을 수 있으며 `oss-ap` CM의 기본 `max-data-bytes=0` 설정에서 전송 실패할 수 있다. 대형 데이터의 분할 또는 TCP 전환과 양쪽 매니페스트·제한값 검증이 필요하다.
+이 Adaptive 빌드는 Lanelet 바이너리 어댑터와 ProxQP를 포함한다. `PlanningAA`는 지도 메시지를 해독하고 인식 객체·교통 신호를 주행 계산에 반영한다. 점군·점유 격자·lateral offset은 수신 상태와 실제 계산 연결 범위가 다르므로 [현재 제한](adaptive/README.md#현재-제한)을 확인해야 한다. KATECH 샘플 지도 전송과 궤적 수신은 확인했으나, 다른 크기의 지도·점군과 실제 차량 신호를 포함한 배치는 별도 검증이 필요하다.
 
 ### 계산 코어
 

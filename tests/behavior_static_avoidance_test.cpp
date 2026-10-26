@@ -392,6 +392,20 @@ int main() {
   check(inconsistent.size() == 1 &&
             near(inconsistent.front().start_m, 1.0),
         "자차 위치에서 이전 이동선의 기대 횡이동과 0.1m 넘게 다르면 제외합니다");
+  const std::vector<planning::StaticAvoidanceAnchoredShiftArc> active_shift{
+      {15.0, 0.0, 25.0, 0.0, 0.0, 0.2},
+      {35.0, 0.0, 45.0, 0.0, 0.2, 0.0}};
+  check(near(planning::staticAvoidanceRegisteredShiftAtEgo(
+                 reference, 5, active_shift), 0.0) &&
+            near(planning::staticAvoidanceRegisteredShiftAtEgo(
+                 reference, 20, active_shift), 0.1) &&
+            near(planning::staticAvoidanceRegisteredShiftAtEgo(
+                 reference, 30, active_shift), 0.2) &&
+            near(planning::staticAvoidanceRegisteredShiftAtEgo(
+                 reference, 40, active_shift), 0.1) &&
+            near(planning::staticAvoidanceRegisteredShiftAtEgo(
+                 reference, 50, active_shift), 0.0),
+        "자차의 차로 중심 이탈과 관계없이 등록된 회피 이동량만 복원합니다");
   const std::vector<planning::StaticAvoidanceShiftArc> proposal{
       {10.0, 20.0, 0.0, 2.0}};
   const auto unapproved = planning::planStaticAvoidanceWithRegisteredShifts(

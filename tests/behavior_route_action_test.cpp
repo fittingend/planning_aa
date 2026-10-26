@@ -599,8 +599,12 @@ int main() {
   check(approved.kind == planning::BehaviorRouteActionKind::StaticAvoidance &&
             approved.registered_shift_arcs.size() == 2 &&
             approved.path.points.size() == approved.path.lane_ids.size() &&
-            approved.path.points[30].y > 0.5,
-        "승인된 회피·복귀 이동선을 출력하고 다음 콜백에 등록합니다");
+            approved.path.points[30].y > 0.5 &&
+            std::abs(std::remainder(
+                approved.registered_shift_arcs.front().end_shift_m,
+                avoidance.avoidance->trim_parameters.quantize_size_m)) <
+                1.0e-9,
+        "승인된 회피·복귀 이동선을 원본 양자화 뒤 출력하고 등록합니다");
   ego.x = 6.0;
   const auto continued = planning::composeBehaviorRouteAction(
       reference, ego, lanes, {}, approved.registered_shift_arcs);
@@ -622,6 +626,7 @@ int main() {
       perception);
   check(early_objects.empty(),
         "정차 시간이 부족한 인식 객체는 회피 대상으로 선택하지 않습니다");
+  ego.longitudinal_velocity_mps = 0.0f;
   const auto selected_objects = planning::makeBehaviorRouteAvoidanceObjects(
       reference.points, ego, {{0.0, 3.0}, {80.0, 3.0}},
       {{0.0, -3.0}, {80.0, -3.0}}, {observed}, perception);
@@ -632,6 +637,15 @@ int main() {
                      0.5) < 1.0e-9 &&
             selected_objects.front().boundary.has_value(),
         "정차 객체와 차로 경계에서 회피 입력을 구성합니다");
+  check(selected_objects.size() == 1 &&
+            std::abs(selected_objects.front().feasibility.avoidance_speed_mps -
+                     1.39) < 1.0e-9 &&
+            std::abs(selected_objects.front().feasibility.minimum_distance_speed_mps -
+                     1.39) < 1.0e-9 &&
+            std::abs(selected_objects.front().feasibility.prepare_distance_m -
+                     1.39) < 1.0e-9 &&
+            selected_objects.front().feasibility.best_effort_deceleration,
+        "정지 차량의 회피 준비·최소 거리 속도는 원본 속도 구간을 따릅니다");
   auto overhanging_object = observed;
   overhanging_object.y = -6.0;
   overhanging_object.width_m = 8.0;

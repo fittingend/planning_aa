@@ -1,0 +1,20 @@
+# Combine two already-built Adaptive applications under the bridge's EM and CM.
+# The bridge image supplies ROS 2, PARA, EM, CM, and Exe_ServiceCreator.
+ARG PLANNING_IMAGE=planning-aa-adaptive:local
+ARG BRIDGE_IMAGE=oss-ap-planning-bridge:local
+FROM ${PLANNING_IMAGE} AS planning
+FROM ${BRIDGE_IMAGE}
+
+COPY --from=planning /opt/planning-ap/opt/PlanningAA /opt/ap/opt/PlanningAA
+COPY --from=planning /opt/planning-ap/etc/com/someip /tmp/planning-com
+COPY --from=planning /opt/planning-ap/lib /tmp/planning-lib
+COPY --from=planning /usr/lib/x86_64-linux-gnu/libboost_serialization.so.1.74.0 /usr/lib/x86_64-linux-gnu/libboost_serialization.so.1.74.0
+COPY adaptive/merge-integrated-runtime.py /tmp/merge-integrated-runtime.py
+
+RUN python3 /tmp/merge-integrated-runtime.py \
+    && test -x /opt/ap/opt/Exe_ServiceCreator/bin/Exe_ServiceCreator \
+    && test -x /opt/ap/opt/PlanningAA/bin/PlanningAA \
+    && test "$(find /opt/ap/opt -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 2 \
+    && rm -rf /tmp/planning-com /tmp/planning-lib /tmp/merge-integrated-runtime.py
+
+# /oss/entrypoint.sh from the bridge image starts the single EM instance.

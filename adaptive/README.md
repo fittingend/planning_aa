@@ -38,7 +38,24 @@ cd ../planning-aa
 ./adaptive/run-stack.sh
 ```
 
-KATECH Autoware의 perception·control 이미지와 함께 시험할 때는 Autoware 저장소를 수정하지 않고 다음 스크립트를 사용한다. 이 스크립트는 기존 `run_partitions.sh`의 호스트 네트워크/ROS 도메인 42와 브리지 전용 네트워크/도메인 0의 불일치를 없애기 위해 네 컨테이너를 `planning-aa-net`, ROS 도메인 42, Cyclone DDS로 실행한다. 종료 시 시작한 컨테이너를 정지한다.
+### 브리지와 PlanningAA를 한 컨테이너에서 실행
+
+기존 브리지 이미지와 PlanningAA 이미지를 빌드한 뒤 아래 명령을 실행한다. `build-integrated-image.sh`는 두 이미지의 PARA SDK 버전이 같은지 확인하고, 브리지의 ROS 2·PARA 런타임에 PlanningAA 실행 파일과 Lanelet 라이브러리를 추가한다. CM의 서비스 매니페스트를 합쳐 SOME/IP 주소를 `192.168.100.92` 하나로 맞춘다. 실행 시 **EM 1개, CM 1개, `Exe_ServiceCreator`와 `PlanningAA` 각각 1개 프로세스**가 된다.
+
+```sh
+./adaptive/build-integrated-image.sh
+./adaptive/run-integrated.sh
+```
+
+이미지 기본 태그는 `planning-aa-integrated:local`이며 `INTEGRATED_IMAGE`로 바꿀 수 있다. 다른 입력 이미지 태그는 `BRIDGE_IMAGE`, `PLANNING_IMAGE`로 지정한다. `run-integrated.sh`는 기존 `planning-aa-net`에서 `.92` 주소를 사용하며 `ROS_DOMAIN_ID`의 기본값은 `42`다. Perception·Control과 함께 실행할 때는 다음 명령을 사용한다.
+
+```sh
+PLANNING_AA_INTEGRATED=1 KATECH_RVIZ=false ./adaptive/run-katech-stack.sh
+```
+
+통합 모드에서는 브리지와 PlanningAA 로그가 `planning-aa-integrated.log` 하나에 기록된다. 분리 실행은 기존 명령과 `PLANNING_AA_INTEGRATED=0`을 그대로 사용한다. 통합 이미지는 SDK 런타임을 포함하므로 앞 절의 배포 제한이 동일하게 적용된다.
+
+KATECH Autoware의 perception·control 이미지와 함께 시험할 때는 Autoware 저장소를 수정하지 않고 다음 스크립트를 사용한다. 이 스크립트는 기존 `run_partitions.sh`의 호스트 네트워크/ROS 도메인 42와 브리지 전용 네트워크/도메인 0의 불일치를 없애기 위해 분리 모드에서는 네 컨테이너, 통합 모드에서는 세 컨테이너를 `planning-aa-net`, ROS 도메인 42, Cyclone DDS로 실행한다. 종료 시 시작한 컨테이너를 정지한다.
 
 ```sh
 KATECH_MAP_PATH="$HOME/autoware_map/sample-map-planning" \
@@ -49,7 +66,7 @@ KATECH_MAP_PATH="$HOME/autoware_map/sample-map-planning" \
 
 `run-katech-stack.sh`는 `PLANNING_AA_SIMULATION=1`을 기본으로 전달한다. 샘플 시뮬레이터에 신호 인식 메시지가 없으면 신호등 앞에서 계속 정지하지 않도록 하는 원본 planning simulator 설정과 같다. 실제 신호를 처리해야 하는 실행에서는 `PLANNING_AA_SIMULATION=0 ./adaptive/run-katech-stack.sh`로 시작한다. 이때 신호 메시지가 없거나 오래되면 정지한다.
 
-`run-katech-stack.sh`는 perception, control, 브리지, PlanningAA의 로그를 각각 별도 터미널에 표시한다. 로그 파일은 실행마다 `output/katech-logs/` 아래 새 디렉터리에 저장되고, 시작 터미널에 정확한 경로가 출력된다. `KATECH_LOG_DIR`로 저장 위치를 지정할 수 있다. 화면이나 터미널 프로그램을 사용할 수 없는 환경에서도 파일 수집은 계속된다. 시작 터미널에서 Ctrl+C를 누르면 스택이 종료되며 로그 파일은 남는다.
+`run-katech-stack.sh`는 perception, control, Planning 앱 컨테이너의 로그를 각각 별도 터미널에 표시한다. 통합 모드에서는 브리지와 PlanningAA가 같은 로그에 나타난다. 로그 파일은 실행마다 `output/katech-logs/` 아래 새 디렉터리에 저장되고, 시작 터미널에 정확한 경로가 출력된다. `KATECH_LOG_DIR`로 저장 위치를 지정할 수 있다. 화면이나 터미널 프로그램을 사용할 수 없는 환경에서도 파일 수집은 계속된다. 시작 터미널에서 Ctrl+C를 누르면 스택이 종료되며 로그 파일은 남는다.
 
 KATECH 실행에서는 브리지의 `SERVICECREATOR_TRACE_VALUES=1`을 켜서 `planning-aa-bridge.log`에 궤적의 점 개수·첫 점·시각을 기록한다. Control 컨테이너에서는 읽기 전용 진단 구독자를 실행해 `/planning/scenario_planning/trajectory`의 발행자, 수신 개수, 첫 점·끝 점, 유한하지 않은 필드를 `trajectory-diagnostic.log`에 저장한다. AA가 계산한 검증 결과는 Docker 내부망의 UDP 12507을 통해 브릿지 컨테이너의 `validator-diagnostic-bridge.py`로 전달하고, 이 어댑터가 `/diagnostics`에 발행한다. 진단 어댑터의 기동 오류는 `validator-diagnostic-bridge.log`, 각 진단 상태 변화는 `trajectory-diagnostic.log`에 남는다. Goal pose를 지정한 뒤 두 궤적 로그의 시각과 첫 점을 대조하면 브리지와 ROS 수신 사이의 차이를 확인할 수 있다. 값을 끄려면 `SERVICECREATOR_TRACE_VALUES=0`으로 실행한다.
 

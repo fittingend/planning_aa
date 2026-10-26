@@ -12,6 +12,20 @@ perception_name="planning-aa-perception"
 control_name="planning-aa-control"
 rviz_mode="${KATECH_RVIZ:-auto}"
 log_dir="${KATECH_LOG_DIR:-${repo_dir}/output/katech-logs/$(date +%Y%m%d_%H%M%S)_$$}"
+integrated="${PLANNING_AA_INTEGRATED:-0}"
+case "${integrated}" in
+  0)
+    planning_containers=(planning-aa-bridge planning-aa)
+    planning_source_ip="${PLANNING_AA_IP:-192.168.100.93}"
+    planning_script=run-stack.sh
+    ;;
+  1)
+    planning_containers=(planning-aa-integrated)
+    planning_source_ip=192.168.100.92
+    planning_script=run-integrated.sh
+    ;;
+  *) echo "PLANNING_AA_INTEGRATED must be 0 or 1" >&2; exit 1 ;;
+esac
 
 case "${rviz_mode}" in
   auto)
@@ -54,7 +68,7 @@ if ((${#missing_images[@]})); then
 fi
 echo "Perception image: ${perception_image}"
 echo "Control image: ${control_image}"
-for name in "${perception_name}" "${control_name}" planning-aa-bridge planning-aa; do
+for name in "${perception_name}" "${control_name}" planning-aa-bridge planning-aa planning-aa-integrated; do
   if docker container inspect "${name}" >/dev/null 2>&1; then
     echo "Container already exists: ${name}" >&2
     exit 1
@@ -87,7 +101,7 @@ cleanup() {
       fi
     fi
   done
-  docker stop planning-aa planning-aa-bridge "${control_name}" "${perception_name}" >/dev/null 2>&1 || true
+  docker stop "${planning_containers[@]}" "${control_name}" "${perception_name}" >/dev/null 2>&1 || true
   if [[ -n "${stack_pid}" ]]; then
     wait "${stack_pid}" >/dev/null 2>&1 || true
   fi
@@ -206,7 +220,7 @@ if [[ -z "${perception_ip}" ]]; then
   exit 1
 fi
 
-for name in "${perception_name}" "${control_name}" planning-aa-bridge planning-aa; do
+for name in "${perception_name}" "${control_name}" "${planning_containers[@]}"; do
   : >"${log_dir}/${name}.log"
 done
 collect_logs "${perception_name}" "${log_dir}/${perception_name}.log"
@@ -227,26 +241,26 @@ ROS_DOMAIN_ID="${domain}" RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
   PLANNING_AA_ROUTE_VISUALIZATION_TARGET="${perception_ip}" \
   PLANNING_AA_TIMING="${PLANNING_AA_TIMING:-1}" \
   PLANNING_AA_SIMULATION="${PLANNING_AA_SIMULATION:-1}" \
-  AP_NET="${network}" bash "${repo_dir}/adaptive/run-stack.sh" \
+  AP_NET="${network}" bash "${repo_dir}/adaptive/${planning_script}" \
   >"${log_dir}/planning-aa.log" 2>&1 &
 stack_pid="$!"
 
 for attempt in {1..50}; do
-  if docker container inspect planning-aa-bridge >/dev/null 2>&1; then
+  if docker container inspect "${planning_containers[0]}" >/dev/null 2>&1; then
     break
   fi
   sleep 0.2
 done
-if ! docker container inspect planning-aa-bridge >/dev/null 2>&1; then
-  echo "Bridge did not start; inspect ${log_dir}/planning-aa.log" >&2
+if ! docker container inspect "${planning_containers[0]}" >/dev/null 2>&1; then
+  echo "Planning container did not start; inspect ${log_dir}/planning-aa.log" >&2
   exit 1
 fi
-collect_logs planning-aa-bridge "${log_dir}/planning-aa-bridge.log"
+collect_logs "${planning_containers[0]}" "${log_dir}/${planning_containers[0]}.log"
 
 # The AA owns validation. This adapter only publishes its measured result
 # under the diagnostic names required by Autoware's system graph.
-docker exec -i -e "PLANNING_AA_SOURCE_IP=${PLANNING_AA_IP:-192.168.100.93}" \
-  planning-aa-bridge bash -c \
+docker exec -i -e "PLANNING_AA_SOURCE_IP=${planning_source_ip}" \
+  "${planning_containers[0]}" bash -c \
   'source /opt/ros/humble/setup.bash && python3 -u -' \
   <"${repo_dir}/adaptive/validator-diagnostic-bridge.py" \
   >"${log_dir}/validator-diagnostic-bridge.log" 2>&1 &
@@ -294,13 +308,13 @@ if ! grep -q 'PlanningAA route visualization listening' \
 fi
 
 opened=0
-for name in "${perception_name}" "${control_name}" planning-aa-bridge planning-aa; do
+for name in "${perception_name}" "${control_name}" "${planning_containers[@]}"; do
   if open_log_terminal "${name}" "${log_dir}/${name}.log"; then
     ((opened += 1))
   fi
 done
-if ((opened < 4)); then
-  echo "Opened ${opened}/4 log windows; all logs are saved in ${log_dir}." >&2
+if ((opened < 2 + ${#planning_containers[@]})); then
+  echo "Opened ${opened}/$((2 + ${#planning_containers[@]})) log windows; all logs are saved in ${log_dir}." >&2
 fi
 
 echo "Perception and control share ${network} and ROS_DOMAIN_ID=${domain} with the bridge."
