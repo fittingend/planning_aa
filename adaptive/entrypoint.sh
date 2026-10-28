@@ -6,7 +6,7 @@ if [ -n "${PLANNING_AA_SOMEIP_ADDRESS:-}" ]; then
   case "${PLANNING_AA_SOMEIP_ADDRESS}:${AP_SOMEIP_ADDRESS:-}" in
     *[!0-9.:]*) echo "Invalid SOME/IP IPv4 address" >&2; exit 1 ;;
   esac
-  export PARA_CONF=/run/planning-aa-etc
+  export PARA_CONF=/run/decision-ap-etc
   cp -a "${PARA_CORE}/etc" "${PARA_CONF}"
   find "${PARA_CONF}" -type f -name '*.json' -exec sed -i \
     -e "s/192\\.168\\.100\\.93/${PLANNING_AA_SOMEIP_ADDRESS}/g" \

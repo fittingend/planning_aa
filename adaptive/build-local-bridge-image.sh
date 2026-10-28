@@ -27,7 +27,7 @@ test -f "${bridge_dir}/src/msgs/autoware_msgs/autoware_planning_msgs/package.xml
 test -f "${bridge_dir}/docker/entrypoint/ap_entrypoint.sh" || {
   echo "Local Service Creator entrypoint missing: ${bridge_dir}" >&2; exit 1;
 }
-image_tag="${BRIDGE_IMAGE:-oss-ap-planning-bridge:local${suffix}}"
+image_tag="${BRIDGE_IMAGE:-decision-ap-bridge:local${suffix}}"
 sdk_version="$(cat "${sdk_dir}/VERSION")"
 case "${sdk_version}" in
   R20-11_*_native-linux-gcc) ;;

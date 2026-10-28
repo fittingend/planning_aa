@@ -8,4 +8,4 @@ Testing/
 output/
 adaptive/vendor/
 deployment/images/*.tar.zst
-deployment/map/sample-map-planning/
+deployment/map/sample-map-decision/

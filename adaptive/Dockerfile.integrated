@@ -1,11 +1,11 @@
 # Combine two already-built Adaptive applications under the bridge's EM and CM.
 # The bridge image supplies ROS 2, PARA, EM, CM, Exe_ServiceCreator, and OTAClient.
-ARG PLANNING_IMAGE=planning-aa-adaptive:local
-ARG BRIDGE_IMAGE=oss-ap-planning-bridge:local
+ARG PLANNING_IMAGE=decision-ap-planning:local
+ARG BRIDGE_IMAGE=decision-ap-bridge:local
 FROM ${PLANNING_IMAGE} AS planning
 FROM ${BRIDGE_IMAGE}
 
-COPY --from=planning /opt/planning-ap/opt/PlanningAA /opt/ap/opt/PlanningAA
+COPY --from=planning /opt/planning-ap/opt/DecisionAP /opt/ap/opt/DecisionAP
 COPY --from=planning /opt/planning-ap/etc/com/someip /tmp/planning-com
 COPY --from=planning /opt/planning-ap/lib /tmp/planning-lib
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -16,7 +16,7 @@ COPY adaptive/merge-integrated-runtime.py /tmp/merge-integrated-runtime.py
 RUN python3 /tmp/merge-integrated-runtime.py \
     && test -x /opt/ap/opt/Exe_ServiceCreator/bin/Exe_ServiceCreator \
     && test -x /opt/ap/opt/OTAClient/bin/OTAClient \
-    && test -x /opt/ap/opt/PlanningAA/bin/PlanningAA \
+    && test -x /opt/ap/opt/DecisionAP/bin/decision-ap \
     && test "$(find /opt/ap/opt -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 3 \
     && rm -rf /tmp/planning-com /tmp/planning-lib /tmp/merge-integrated-runtime.py
 

@@ -8,8 +8,8 @@ case "${arch}" in
   aarch64) platform=linux/arm64; suffix=-aarch64 ;;
   *) echo "Unsupported architecture: ${arch}" >&2; exit 1 ;;
 esac
-source_image="${OSS_AP_IMAGE:-oss-ap-planning-bridge:local${suffix}}"
-bridge_image="${BRIDGE_IMAGE:-oss-ap-planning-bridge:local${suffix}}"
+source_image="${OSS_AP_IMAGE:-decision-ap-bridge:local${suffix}}"
+bridge_image="${BRIDGE_IMAGE:-decision-ap-bridge:local${suffix}}"
 docker image inspect "${source_image}" >/dev/null || {
   echo "Existing oss-ap runtime image is required: ${source_image}" >&2
   exit 1

@@ -8,10 +8,10 @@ case "${arch}" in
   aarch64) suffix=-aarch64; docker_arch=arm64 ;;
   *) echo "Unsupported architecture: ${arch}" >&2; exit 1 ;;
 esac
-network="${AP_NET:-planning-aa-net}"
+network="${AP_NET:-decision-ap-net}"
 subnet="${AP_SUBNET:-10.88.0.0/24}"
 bridge_ip="${AP_BRIDGE_IP:-10.88.0.92}"
-bridge_image="${BRIDGE_IMAGE:-oss-ap-planning-bridge:local${suffix}}"
+bridge_image="${BRIDGE_IMAGE:-decision-ap-bridge:local${suffix}}"
 docker image inspect "${bridge_image}" >/dev/null || {
   echo "Bridge image is missing: ${bridge_image}; run ./adaptive/build-local-bridge-image.sh" >&2
   exit 1
@@ -37,7 +37,7 @@ for key in RMW_IMPLEMENTATION PARA_LOG_LEVEL SERVICECREATOR_INPUT_MODE \
     bridge_env+=(-e "${key}=${!key}")
   fi
 done
-docker run -d --name planning-aa-bridge --rm --platform "linux/${docker_arch}" \
+docker run -d --name decision-ap-bridge --rm --platform "linux/${docker_arch}" \
   --network "${network}" --ip "${bridge_ip}" --shm-size=2g \
   -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}" \
   -e ROS_LOCALHOST_ONLY=0 \
@@ -45,6 +45,6 @@ docker run -d --name planning-aa-bridge --rm --platform "linux/${docker_arch}" \
   -e "AP_SOMEIP_ADDRESS=${bridge_ip}" \
   "${bridge_env[@]}" \
   "${bridge_image}" >/dev/null
-trap 'docker stop planning-aa-bridge >/dev/null 2>&1 || true' EXIT
+trap 'docker stop decision-ap-bridge >/dev/null 2>&1 || true' EXIT
 
 AP_NET="${network}" bash "${repo_dir}/adaptive/run-image.sh"

@@ -1,4 +1,6 @@
-# Planning AA
+# Decision AP
+
+Decision AP는 `Exe_ServiceCreator`, `OTAClient`, 내부 계획 앱 `decision-ap`를 한 Adaptive AUTOSAR 컨테이너에서 실행하는 릴리즈다. 이미지 기본 태그는 `decision-ap:local`(ARM64는 `decision-ap:local-aarch64`)이다. 계획 실행 파일은 `/opt/ap/opt/DecisionAP/bin/decision-ap`이며 EM 프로세스 이름은 `DecisionAP`다. SOME/IP 포트 계약은 유지한다.
 
 Autoware Decision Planning의 계산과 상태 처리를 ROS 메시지에 의존하지 않는 C++ 코어로 옮기는 저장소다. 목표 배포 형태는 Adaptive AUTOSAR 애플리케이션이다. **10개 rosbag의 6,085프레임에서 최종 궤적을 생성했고, KATECH Planning Simulation에서 ROS 2↔SOME/IP 종단 궤적 수신과 보행자 회피 주행을 확인했다. 전체 기능의 원본 동등성과 실차 주행은 검증되지 않았다.**
 
@@ -74,14 +76,14 @@ route를 이 앱이 소유하면 아래 route 요청의 결과를 내부 현재 
 
 ## Adaptive AUTOSAR 애플리케이션 구현
 
-현재 실행 앱은 위의 외부 계약 초안 전체가 아니라 [`adaptive/app/main.cpp`](adaptive/app/main.cpp)의 **`PlanningAA` 단일 프로세스**다. Autoware Planning의 계산은 ROS 2 타입과 노드에 의존하지 않는 C++ 코어로 옮기고, 앱 경계에서 생성된 ARA 타입과 `ara::com` 프록시·스켈레톤으로 변환한다. ROS 2와 SOME/IP 사이의 토픽·서비스 변환은 별도 `oss-ap-planning-bridge`의 `Exe_ServiceCreator`가 맡는다. 이 브리지는 원본 `oss-ap`를 직접 변경하지 않고 PlanningAA에 필요한 서비스만 제공한다.
+현재 실행 앱은 위의 외부 계약 초안 전체가 아니라 [`adaptive/app/main.cpp`](adaptive/app/main.cpp)의 **`DecisionAP` 단일 프로세스**다. Autoware Planning의 계산은 ROS 2 타입과 노드에 의존하지 않는 C++ 코어로 옮기고, 앱 경계에서 생성된 ARA 타입과 `ara::com` 프록시·스켈레톤으로 변환한다. ROS 2와 SOME/IP 사이의 토픽·서비스 변환은 별도 `decision-ap-bridge`의 `Exe_ServiceCreator`가 맡는다. 이 브리지는 원본 `oss-ap`를 직접 변경하지 않고 DecisionAP에 필요한 서비스만 제공한다.
 
 ```text
 Autoware Perception·Control (ROS 2)
     ↕ ROS 2 토픽·route 서비스
 Exe_ServiceCreator 브리지 (ROS 2 ↔ SOME/IP)
     ↕ ara::com Event·Method
-PlanningAA (EM/CM 관리 프로세스)
+DecisionAP (EM/CM 관리 프로세스)
     └─ route 코어 → 행동 경로·행동 속도 → 경로 최적화·동작 속도
        → 장애물 순항·정지·감속 → 최종 속도 평활화·검증
 ```
@@ -95,13 +97,13 @@ PlanningAA (EM/CM 관리 프로세스)
 | 계획 계산 | 지도, route, odometry, 운영 모드가 준비되면 새 odometry를 기준으로 작업 스레드가 입력 스냅샷을 만들고 `PlanningPipelineMapAdapter::onRouteFrame()`을 실행한다. Lanelet 경로, 행동 경로·속도, 인식 객체 회피, 최적화, 동작 속도, 장애물 순항·정지를 계산한 뒤 `PlanningFinalPipelineCore`에서 최종 궤적을 평활화·검증한다. |
 | 출력 | 유효성 검사에 통과한 궤적만 `PPort_PV2SCr`의 **Service 2317, Event 12506**으로 보낸다. 브리지가 이를 `/planning/scenario_planning/trajectory`로 발행해 Control이 소비한다. 선택 궤적, 평가 지표, 남은 거리·시간, 방향지시등·비상등은 별도 Event로 발행한다. 검증이 실패한 프레임의 최종 궤적은 보내지 않는다. |
 
-입력 콜백은 최신 샘플을 갱신하고 계획 계산은 별도 작업 스레드에서 수행한다. 지도 바이너리는 [`LaneletBinAdapter`](include/planning/lanelet_bin_adapter.hpp)가 해독하며, 최종 궤적의 위치·자세·속도 등을 [`trajectory_output.cpp`](adaptive/app/trajectory_output.cpp)가 생성된 ARA 메시지 타입으로 변환한다. `PlanningAA`는 ROS 2 궤적 토픽을 직접 발행하지 않는다. 구체적인 포트와 토픽 대응은 [Adaptive 실행 문서](adaptive/README.md#현재-인터페이스)를 참조한다.
+입력 콜백은 최신 샘플을 갱신하고 계획 계산은 별도 작업 스레드에서 수행한다. 지도 바이너리는 [`LaneletBinAdapter`](include/planning/lanelet_bin_adapter.hpp)가 해독하며, 최종 궤적의 위치·자세·속도 등을 [`trajectory_output.cpp`](adaptive/app/trajectory_output.cpp)가 생성된 ARA 메시지 타입으로 변환한다. `DecisionAP`는 ROS 2 궤적 토픽을 직접 발행하지 않는다. 구체적인 포트와 토픽 대응은 [Adaptive 실행 문서](adaptive/README.md#현재-인터페이스)를 참조한다.
 
 ### 실행 수명주기와 배포
 
-[`adaptive/CMakeLists.txt`](adaptive/CMakeLists.txt)는 PARA SDK, 생성된 ARA 통신 헤더·매니페스트, ROS 비의존 계획 코어, Lanelet 바이너리 어댑터와 ProxQP를 묶어 `PlanningAA`를 빌드한다. 실행 매니페스트는 **CM이 Running 상태가 된 뒤** 앱을 시작하도록 지정한다. 앱은 `ara::core::Initialize()` 후 서비스를 제공하고 입력 서비스를 찾은 다음 `ara::exec::ExecutionClient`로 Running을 보고한다. 종료 신호를 받으면 구독과 서비스 제공을 해제하고 `ara::core::Deinitialize()`를 호출한다. 컨테이너의 진입점은 EM을 실행하며, EM이 CM과 `PlanningAA`를 관리한다.
+[`adaptive/CMakeLists.txt`](adaptive/CMakeLists.txt)는 PARA SDK, 생성된 ARA 통신 헤더·매니페스트, ROS 비의존 계획 코어, Lanelet 바이너리 어댑터와 ProxQP를 묶어 `DecisionAP`를 빌드한다. 실행 매니페스트는 **CM이 Running 상태가 된 뒤** 앱을 시작하도록 지정한다. 앱은 `ara::core::Initialize()` 후 서비스를 제공하고 입력 서비스를 찾은 다음 `ara::exec::ExecutionClient`로 Running을 보고한다. 종료 신호를 받으면 구독과 서비스 제공을 해제하고 `ara::core::Deinitialize()`를 호출한다. 컨테이너의 진입점은 EM을 실행하며, EM이 CM과 `DecisionAP`를 관리한다.
 
-현재 Docker 빌드는 **x86_64 또는 aarch64 PARA R20-11 SDK**를 선택한다. 두 SDK와 생성 ARA 파일은 `adaptive/vendor/`에 보관되어 PlanningAA 이미지 빌드에 다른 Git 저장소가 필요하지 않다. ARM64 전체 스택 실행에는 같은 아키텍처의 브리지·Perception·Control 이미지가 필요하다. KATECH 통합 실행은 Perception·Control·브리지·PlanningAA 네 컨테이너를 같은 Docker 네트워크와 ROS 도메인에서 시작한다. 원본 Decision 컨테이너는 실행하지 않는다. 빌드·실행 명령 및 로그 위치는 [아래 절](#adaptive-autosar-컨테이너와-oss-ap-브리지)에 있다.
+현재 Docker 빌드는 **x86_64 또는 aarch64 PARA R20-11 SDK**를 선택한다. 두 SDK와 생성 ARA 파일은 `adaptive/vendor/`에 보관되어 DecisionAP 이미지 빌드에 다른 Git 저장소가 필요하지 않다. ARM64 전체 스택 실행에는 같은 아키텍처의 Perception·Control·Decision AP 이미지가 필요하다. KATECH 통합 실행은 Perception·Control·Decision AP 세 컨테이너를 같은 Docker 네트워크와 ROS 도메인에서 시작한다. 원본 Decision 컨테이너는 실행하지 않는다. 빌드·실행 명령 및 로그 위치는 [아래 절](#adaptive-autosar-컨테이너와-oss-ap-브리지)에 있다.
 
 ## 구현과 검증 상태
 
@@ -119,7 +121,7 @@ CTest의 기준 데이터에는 실제 bag, 원본 노드 실행 결과, 합성 
 
 ## K-City 독립 종단 재생
 
-10개 rosbag의 route부터 최종 validator까지 **6,085/6,085프레임**에서 planning-aa가 궤적을 만들었다. 원본 최종 궤적과 같은 차량 위치에서 속도를 비교할 수 있는 프레임은 6,047개다. 아래 값은 원본·독립 궤적 모두 차량 위치에서 2m 이내인 프레임의 계획 속도 절대 오차다. 기본 재생은 감속 후보를 켠 별도 진단과 구분한다.
+10개 rosbag의 route부터 최종 validator까지 **6,085/6,085프레임**에서 decision-ap가 궤적을 만들었다. 원본 최종 궤적과 같은 차량 위치에서 속도를 비교할 수 있는 프레임은 6,047개다. 아래 값은 원본·독립 궤적 모두 차량 위치에서 2m 이내인 프레임의 계획 속도 절대 오차다. 기본 재생은 감속 후보를 켠 별도 진단과 구분한다.
 
 | 시나리오 | 비교 프레임 | 속도 오차 중앙값 / 95백분위 (m/s) | 0.5m/s 이내 |
 | --- | ---: | ---: | ---: |
@@ -134,7 +136,7 @@ CTest의 기준 데이터에는 실제 bag, 원본 노드 실행 결과, 합성 
 | IPC pedestrian | 454 | 0.020 / 1.124 | 76.7% |
 | IPC stopline | 574 | 0.002 / 0.026 | 100% |
 
-전체 비교 프레임의 85.1%가 0.5m/s 이내다. 이는 **차량 위치의 속도** 통계이며 궤적 점별 동등성을 뜻하지 않는다. 각 시나리오의 그래프·CSV와 재생 조건은 [시나리오 비교](reference/planning_pipeline_multi_scenario_20261011.md)에 있다. `251231_KCity_ori`의 각 `result`에 planning-aa 산출물로는 기본 CSV·PNG와 재생 조건 JSON만 남겼다. 추가 진단 CSV·로그는 `251231_KCity_ori/planning_aa_result_diagnostics_20261011.tar.gz`에 보관하고 핵심 대조 입력은 [reference/data](reference/data/README.md)에 두었다.
+전체 비교 프레임의 85.1%가 0.5m/s 이내다. 이는 **차량 위치의 속도** 통계이며 궤적 점별 동등성을 뜻하지 않는다. 각 시나리오의 그래프·CSV와 재생 조건은 [시나리오 비교](reference/planning_pipeline_multi_scenario_20261011.md)에 있다. `251231_KCity_ori`의 각 `result`에 decision-ap 산출물로는 기본 CSV·PNG와 재생 조건 JSON만 남겼다. 추가 진단 CSV·로그는 `251231_KCity_ori/planning_aa_result_diagnostics_20261011.tar.gz`에 보관하고 핵심 대조 입력은 [reference/data](reference/data/README.md)에 두었다.
 
 지도 경로는 goal 높이를 모든 점에 복사하지 않고 Lanelet2 중심선 높이를 유지한다. 원본 장애물 순항 노드의 안전거리 설정을 정지 후보에도 전달했고, 최종 평활화의 외부 속도 제한점은 원본처럼 최근접 선분 시작점에서 거리를 재도록 맞췄다. 이번 기준선 재표본화 수정 후 10개 bag을 다시 재생해 **6,085/6,085 생성, 6,047개 속도 비교**를 확인했고 CSV·비교 PNG를 갱신했다. blocking의 속도 오차 95백분위 3.707m/s와 S자의 1.741m/s는 사실상 그대로다.
 
@@ -178,17 +180,17 @@ HPC S자의 기록 중간 경로와 이전 스무더 출력을 넣은 **조건�
 
 `adaptive/`에는 PopcornSAR PARA **R20-11 x86_64·aarch64** SDK를 사용하는 실행 앱·EM/CM 매니페스트·Docker 정의가 있다. SDK와 필요한 생성 ARA 헤더·매니페스트를 `adaptive/vendor/`에 로컬 복사해 두었다. 이 디렉터리는 Git과 일반 Docker 빌드 컨텍스트에서 제외한다. 다른 설치본은 `PARA_SDK`와 `OSS_AP_SOURCE`로 지정할 수 있다. SDK 버전은 `R20-11_v26.04.03_native-linux-gcc`이다. SDK와 생성물의 라이선스가 복제·배포를 제한하므로 `adaptive/vendor/` 및 SDK 런타임을 포함한 이미지는 외부에 배포하지 않는다.
 
-`~/interface ROS2 to AA`에 적힌 실제 SOME/IP 계약의 연결 상태는 다음과 같다. 11개 입력 Event는 `oss-ap`의 `SCr2MP`(Service 4308)에서 ROS2→AA로 보낸다. `PlanningAA`는 Lanelet 지도·route·odometry를 주행 프레임 생산자에 연결하고, 인식 객체·교통 신호·가속도·속도 제한·운영 모드를 계산에 반영한다. route Method 3개(10801/10809/10812)는 `PlanningAA`가 Service 1817로 응답한다. Lanelet route는 전달받은 segment를 route 코어에 넘기며 waypoint route는 지도에서 경로를 탐색한다. **궤적 출력은 Event 12506(Service 2317) 하나**다. 최종 파이프라인이 검증한 궤적을 변환해 `Send()`하는 실행 경로를 연결했다. KATECH 샘플 지도에서 ROS2→SOME/IP→AA→SOME/IP→ROS2 제어 궤적 수신과 정지 보행자 회피 주행을 확인했다. 실차 주행은 별도 검증이 필요하다.
+`~/interface ROS2 to AA`에 적힌 실제 SOME/IP 계약의 연결 상태는 다음과 같다. 11개 입력 Event는 `oss-ap`의 `SCr2MP`(Service 4308)에서 ROS2→AA로 보낸다. `DecisionAP`는 Lanelet 지도·route·odometry를 주행 프레임 생산자에 연결하고, 인식 객체·교통 신호·가속도·속도 제한·운영 모드를 계산에 반영한다. route Method 3개(10801/10809/10812)는 `DecisionAP`가 Service 1817로 응답한다. Lanelet route는 전달받은 segment를 route 코어에 넘기며 waypoint route는 지도에서 경로를 탐색한다. **궤적 출력은 Event 12506(Service 2317) 하나**다. 최종 파이프라인이 검증한 궤적을 변환해 `Send()`하는 실행 경로를 연결했다. KATECH 샘플 지도에서 ROS2→SOME/IP→AA→SOME/IP→ROS2 제어 궤적 수신과 정지 보행자 회피 주행을 확인했다. 실차 주행은 별도 검증이 필요하다.
 
 | 구간 | ROS2 ↔ AA | 구현 |
 | --- | --- | --- |
-| clock·localization·지도·perception·외부 속도·운영 모드, Event 11개 | ROS2 → `oss-ap` → `PlanningAA` | 브리지 송신과 AA 구독·최신 샘플 보관 |
-| clear/lanelet/waypoint route, Method 3개 | ROS2 → `oss-ap` → `PlanningAA` | `mission_planner/*`와 `route_selector/main/*` 이름 제공, 지도 기반 waypoint 경로 탐색 |
-| final trajectory, Event 12506 | `PlanningAA` → `oss-ap` → ROS2 | route 기반 주행 프레임 생성, 검증, 변환·송신 경로 연결. KATECH 샘플 지도·Planning Simulation에서 종단 수신과 주행 확인 |
+| clock·localization·지도·perception·외부 속도·운영 모드, Event 11개 | ROS2 → `oss-ap` → `DecisionAP` | 브리지 송신과 AA 구독·최신 샘플 보관 |
+| clear/lanelet/waypoint route, Method 3개 | ROS2 → `oss-ap` → `DecisionAP` | `mission_planner/*`와 `route_selector/main/*` 이름 제공, 지도 기반 waypoint 경로 탐색 |
+| final trajectory, Event 12506 | `DecisionAP` → `oss-ap` → ROS2 | route 기반 주행 프레임 생성, 검증, 변환·송신 경로 연결. KATECH 샘플 지도·Planning Simulation에서 종단 수신과 주행 확인 |
 
-두 컨테이너는 Docker 네트워크 `10.88.0.0/24`에서 각각 `10.88.0.92`(브릿지)와 `10.88.0.93`(`PlanningAA`)을 사용한다. `adaptive/vendor/oss-ap`의 로컬 소스에서 `Exe_ServiceCreator`를 빌드하고, `adaptive/ota-client/`의 OTAClient도 같은 EM 아래 빌드한다. 이전 planning 앱의 매니페스트는 배포에서 제외한다. 원본 `oss-ap` 저장소는 수정하지 않는다.
+분리 실행의 두 컨테이너는 Docker 네트워크 `10.88.0.0/24`에서 각각 `10.88.0.92`(브릿지)와 `10.88.0.93`(`DecisionAP`)을 사용한다. `adaptive/vendor/oss-ap`의 로컬 소스에서 `Exe_ServiceCreator`를 빌드하고, `adaptive/ota-client/`의 OTAClient도 같은 EM 아래 빌드한다. 이전 planning 앱의 매니페스트는 배포에서 제외한다. 원본 `oss-ap` 저장소는 수정하지 않는다.
 
-브리지·OTAClient·`PlanningAA`를 **한 컨테이너의 EM·CM** 아래 실행하려면 브리지와 PlanningAA 이미지를 빌드한 뒤 `./adaptive/build-integrated-image.sh`와 `./adaptive/run-integrated.sh`를 사용한다. 통합 이미지에는 세 앱이 별도 프로세스로 설치되고 CM은 실행 시 `10.88.0.92` 주소 하나를 사용한다. OTAClient는 MMF OTA Manager에 등록을 시도하며, Manager가 없어도 PlanningAA 실행은 계속된다. KATECH 전체 스택은 `PLANNING_AA_INTEGRATED=1 ./adaptive/run-katech-stack.sh`로 시작한다. 자세한 내용은 [통합 실행 절](adaptive/README.md#브리지와-planningaa를-한-컨테이너에서-실행)에 있다.
+브리지·OTAClient·`DecisionAP`를 **한 컨테이너의 EM·CM** 아래 실행하려면 브리지와 DecisionAP 이미지를 빌드한 뒤 `./adaptive/build-integrated-image.sh`와 `./adaptive/run-integrated.sh`를 사용한다. 통합 이미지에는 세 앱이 별도 프로세스로 설치되고 CM은 실행 시 `10.88.0.92` 주소 하나를 사용한다. OTAClient는 MMF OTA Manager에 등록을 시도하며, Manager가 없어도 DecisionAP 실행은 계속된다. KATECH 전체 스택은 `DECISION_AP_INTEGRATED=1 ./adaptive/run-katech-stack.sh`로 시작한다. 자세한 내용은 [통합 실행 절](adaptive/README.md#브리지와-decisionap를-한-컨테이너에서-실행)에 있다.
 
 ```sh
 ./adaptive/build-local-bridge-image.sh
@@ -197,42 +199,42 @@ HPC S자의 기록 중간 경로와 이전 스무더 출력을 넣은 **조건�
 ./adaptive/run-integrated.sh
 ```
 
-ARM64 이미지는 `ARCH=aarch64 ./adaptive/build-local-bridge-image.sh`와 `ARCH=aarch64 ./adaptive/build-image.sh`로 만든다. x86_64 PC에서는 브리지를 ARM64 sysroot로 크로스 컴파일하고 PlanningAA는 QEMU에서 빌드한다. SDK·생성 ARA 파일·브리지 소스와 ROS 메시지 정의는 모두 이 저장소의 `adaptive/vendor/`에서 가져온다. 통합 이미지는 두 ARM64 이미지를 준비한 뒤 `ARCH=aarch64 ./adaptive/build-integrated-image.sh`로 만든다. PC에서 대상 기반 이미지와 통합 이미지의 ARM64 명령을 실행하려면 arm64 binfmt/QEMU가 필요하다.
+ARM64 이미지는 `ARCH=aarch64 ./adaptive/build-local-bridge-image.sh`와 `ARCH=aarch64 ./adaptive/build-image.sh`로 만든다. x86_64 PC에서는 브리지를 ARM64 sysroot로 크로스 컴파일하고 DecisionAP는 QEMU에서 빌드한다. SDK·생성 ARA 파일·브리지 소스와 ROS 메시지 정의는 모두 이 저장소의 `adaptive/vendor/`에서 가져온다. 통합 이미지는 두 ARM64 이미지를 준비한 뒤 `ARCH=aarch64 ./adaptive/build-integrated-image.sh`로 만든다. PC에서 대상 기반 이미지와 통합 이미지의 ARM64 명령을 실행하려면 arm64 binfmt/QEMU가 필요하다.
 
 KATECH perception·control 이미지를 같은 ROS 도메인과 Docker 네트워크에서 실행할 때는 `./adaptive/run-katech-stack.sh`를 사용한다. 토픽 대응과 남은 route 토픽 제약은 [adaptive 실행 문서](adaptive/README.md)에 정리했다.
 
 #### KATECH 샘플 시뮬레이터: ARM64 타겟과 PC 에뮬레이션
 
-보드용 ARM64 이미지 3개는 `deployment/images/board-arm64.tar.zst`, 샘플 지도는 `deployment/map/sample-map-planning/`에 보관한다. 외부 PC RViz용 AMD64 이미지는 `deployment/images/pc-rviz-amd64.tar.zst`에 보관한다. 폴더 전체를 복사하면 이 파일들도 함께 옮겨지며, 실행 스크립트는 필요한 이미지가 Docker에 없을 때 해당 압축 파일을 자동으로 불러온다. 두 장비에 Docker와 `zstd`가 필요하다. 파일 구성과 갱신 명령은 [deployment 안내](deployment/README.md)에 있다.
+보드용 ARM64 이미지 3개는 `deployment/images/board-arm64.tar.zst`, 샘플 지도는 `deployment/map/sample-map-decision/`에 보관한다. 외부 PC RViz용 AMD64 이미지는 `deployment/images/pc-rviz-amd64.tar.zst`에 보관한다. 폴더 전체를 복사하면 이 파일들도 함께 옮겨지며, 실행 스크립트는 필요한 이미지가 Docker에 없을 때 해당 압축 파일을 자동으로 불러온다. 두 장비에 Docker와 `zstd`가 필요하다. 파일 구성과 갱신 명령은 [deployment 안내](deployment/README.md)에 있다.
 
-KATECH의 권장 구성처럼 **BSP 보드에서 Perception·Control·PlanningAA를 실행하고 외부 PC에서 RViz2만 실행**하려면 두 장비가 같은 LAN과 ROS 도메인(기본 42)에 있어야 한다. `ip -br address`로 보드와 PC의 LAN 인터페이스 이름을 각각 확인한다.
+KATECH의 권장 구성처럼 **BSP 보드에서 Perception·Control·DecisionAP를 실행하고 외부 PC에서 RViz2만 실행**하려면 두 장비가 같은 LAN과 ROS 도메인(기본 42)에 있어야 한다. `ip -br address`로 보드와 PC의 LAN 인터페이스 이름을 각각 확인한다.
 
 ```sh
 # ARM64 BSP 보드: eth0를 실제 LAN 인터페이스로 바꾼다.
 KATECH_NETWORK_MODE=host KATECH_NETWORK_INTERFACE=eth0 \
-  PLANNING_AA_INTEGRATED=1 KATECH_RVIZ=false ./adaptive/run-katech-stack.sh
+  DECISION_AP_INTEGRATED=1 KATECH_RVIZ=false ./adaptive/run-katech-stack.sh
 
-# 외부 x86_64 PC: 동일한 planning-aa 폴더에서 실행한다.
+# 외부 x86_64 PC: 동일한 decision-ap 폴더에서 실행한다.
 KATECH_NETWORK_INTERFACE=enp3s0 ./adaptive/run-remote-rviz.sh
 ```
 
-PC의 `KATECH_NETWORK_INTERFACE`도 실제 LAN 인터페이스로 바꾼다. PC에는 PlanningAA·Control 이미지, ROS 2 호스트 설치, 지도 파일이 필요하지 않다. 자세한 확인 순서는 [보드와 외부 PC 실행 절](adaptive/README.md#bsp-보드와-외부-pc-rviz)에 있다.
+PC의 `KATECH_NETWORK_INTERFACE`도 실제 LAN 인터페이스로 바꾼다. PC에는 DecisionAP·Control 이미지, ROS 2 호스트 설치, 지도 파일이 필요하지 않다. 자세한 확인 순서는 [보드와 외부 PC 실행 절](adaptive/README.md#bsp-보드와-외부-pc-rviz)에 있다.
 
 보드 한 대에서만 샘플 시뮬레이터를 시험할 때는 기존 Docker bridge 모드도 사용할 수 있다.
 
 ```sh
-PLANNING_AA_INTEGRATED=1 KATECH_RVIZ=false ./adaptive/run-katech-stack.sh
+DECISION_AP_INTEGRATED=1 KATECH_RVIZ=false ./adaptive/run-katech-stack.sh
 ```
 
 x86_64 PC에서 ARM64 이미지를 QEMU로 실행할 때는 아키텍처를 지정한다.
 
 ```sh
-ARCH=aarch64 PLANNING_AA_INTEGRATED=1 KATECH_RVIZ=false ./adaptive/run-katech-stack.sh
+ARCH=aarch64 DECISION_AP_INTEGRATED=1 KATECH_RVIZ=false ./adaptive/run-katech-stack.sh
 ```
 
 PC에서 RViz가 필요하면 `KATECH_RVIZ=false`를 빼고 x86_64 Perception 이미지를 준비한다. PC 에뮬레이션의 Planning Simulation에는 느린 궤적 생성 주기에 맞춘 진단 기준이 자동 적용되며, ARM64 타겟에는 적용되지 않는다. 지도 로딩 후 초기 위치와 Goal pose를 지정하고 Autonomous를 켠다. 시작 터미널에서 `Ctrl+C`를 누르면 컨테이너가 종료되고 로그는 `output/katech-logs/`에 남는다. 이 명령은 타겟에서도 샘플 시뮬레이터를 실행하며 실차 연결 절차는 아니다.
 
-`IMAGE_TAG`로 PlanningAA 이미지 이름을 바꿀 수 있다. `build-image.sh`는 `adaptive/vendor/`의 SDK·생성물을 Docker BuildKit의 `para_sdk`와 `oss_ap` 빌드 컨텍스트로 읽고, 실행 이미지에 EM·CM·PARA 런타임·`PlanningAA`를 설치한다. Docker 없이 CMake 빌드만 확인하려면 다음을 실행한다.
+`IMAGE_TAG`로 DecisionAP 이미지 이름을 바꿀 수 있다. `build-image.sh`는 `adaptive/vendor/`의 SDK·생성물을 Docker BuildKit의 `para_sdk`와 `oss_ap` 빌드 컨텍스트로 읽고, 실행 이미지에 EM·CM·PARA 런타임·`DecisionAP`를 설치한다. Docker 없이 CMake 빌드만 확인하려면 다음을 실행한다.
 
 ```sh
 cmake -S adaptive -B build-adaptive -G Ninja \
@@ -242,7 +244,7 @@ cmake --build build-adaptive -j 4
 cmake --install build-adaptive --component Standalone
 ```
 
-이 Adaptive 빌드는 Lanelet 바이너리 어댑터와 ProxQP를 포함한다. `PlanningAA`는 지도 메시지를 해독하고 인식 객체·교통 신호를 주행 계산에 반영한다. 점군·점유 격자·lateral offset은 수신 상태와 실제 계산 연결 범위가 다르므로 [현재 제한](adaptive/README.md#현재-제한)을 확인해야 한다. KATECH 샘플 지도 전송과 궤적 수신은 확인했으나, 다른 크기의 지도·점군과 실제 차량 신호를 포함한 배치는 별도 검증이 필요하다.
+이 Adaptive 빌드는 Lanelet 바이너리 어댑터와 ProxQP를 포함한다. `DecisionAP`는 지도 메시지를 해독하고 인식 객체·교통 신호를 주행 계산에 반영한다. 점군·점유 격자·lateral offset은 수신 상태와 실제 계산 연결 범위가 다르므로 [현재 제한](adaptive/README.md#현재-제한)을 확인해야 한다. KATECH 샘플 지도 전송과 궤적 수신은 확인했으나, 다른 크기의 지도·점군과 실제 차량 신호를 포함한 배치는 별도 검증이 필요하다.
 
 ### 계산 코어
 

@@ -8,9 +8,9 @@ case "${arch}" in
   aarch64) platform=linux/arm64; docker_arch=arm64; suffix=-aarch64 ;;
   *) echo "Unsupported architecture: ${arch}" >&2; exit 1 ;;
 esac
-bridge_image="${BRIDGE_IMAGE:-oss-ap-planning-bridge:local${suffix}}"
-planning_image="${PLANNING_IMAGE:-planning-aa-adaptive:local${suffix}}"
-integrated_image="${INTEGRATED_IMAGE:-planning-aa-integrated:local${suffix}}"
+bridge_image="${BRIDGE_IMAGE:-decision-ap-bridge:local${suffix}}"
+planning_image="${PLANNING_IMAGE:-decision-ap-planning:local${suffix}}"
+integrated_image="${INTEGRATED_IMAGE:-decision-ap:local${suffix}}"
 
 for image in "${bridge_image}" "${planning_image}"; do
   docker image inspect "${image}" >/dev/null || {
@@ -28,7 +28,7 @@ done
 bridge_sdk="$(docker image inspect --format '{{index .Config.Labels "para.sdk.version"}}' "${bridge_image}")"
 planning_sdk="$(docker image inspect --format '{{index .Config.Labels "para.sdk.version"}}' "${planning_image}")"
 if [[ -z "${bridge_sdk}" || "${bridge_sdk}" == "<no value>" || "${bridge_sdk}" == unknown || "${bridge_sdk}" != "${planning_sdk}" ]]; then
-  echo "PARA SDK versions must match: bridge=${bridge_sdk}, PlanningAA=${planning_sdk}" >&2
+  echo "PARA SDK versions must match: bridge=${bridge_sdk}, DecisionAP=${planning_sdk}" >&2
   exit 1
 fi
 

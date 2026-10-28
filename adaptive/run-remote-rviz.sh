@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# The board runs PlanningAA and Autoware. This PC runs only the RViz client.
+# The board runs DecisionAP and Autoware. This PC runs only the RViz client.
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 domain="${ROS_DOMAIN_ID:-42}"
 image="${KATECH_RVIZ_IMAGE:-katech-autoware-system-control:adsw-perception}"
 interface="${KATECH_NETWORK_INTERFACE:-}"
-name="planning-aa-remote-rviz-${domain}"
+name="decision-ap-remote-rviz-${domain}"
 
 [[ "$(uname -m)" == x86_64 ]] || { echo "Run remote RViz on an x86_64 PC." >&2; exit 1; }
 [[ -n "${DISPLAY:-}" && -d /tmp/.X11-unix ]] || {
@@ -34,10 +34,15 @@ image_arch="$(docker image inspect --format '{{.Architecture}}' "${image}")" || 
   exit 1
 }
 [[ "${image_arch}" == amd64 ]] || { echo "RViz image must be amd64: ${image}" >&2; exit 1; }
-if docker container inspect "${name}" >/dev/null 2>&1; then
-  echo "Container already exists: ${name}" >&2
-  exit 1
-fi
+for existing_name in "${name}" "planning-aa-remote-rviz-${domain}"; do
+  if docker container inspect "${existing_name}" >/dev/null 2>&1; then
+    if [[ "$(docker container inspect -f '{{.State.Running}}' "${existing_name}")" == true ]]; then
+      echo "RViz container already running: ${existing_name}" >&2
+      exit 1
+    fi
+    docker rm "${existing_name}" >/dev/null
+  fi
+done
 dds_args=()
 if [[ -n "${interface}" ]]; then
   dds_uri="<CycloneDDS><Domain><General><Interfaces><NetworkInterface name=\"${interface}\" multicast=\"true\"/></Interfaces><AllowMulticast>true</AllowMulticast></General></Domain></CycloneDDS>"

@@ -27,7 +27,7 @@ case "${sdk_version}" in
   R20-11_*_native-linux-gcc) ;;
   *) echo "Unsupported PARA SDK version: ${sdk_version}" >&2; exit 1 ;;
 esac
-image_tag="${IMAGE_TAG:-planning-aa-adaptive:local${suffix}}"
+image_tag="${IMAGE_TAG:-decision-ap-planning:local${suffix}}"
 docker buildx build --load --platform "${platform}" \
   --build-context "para_sdk=${sdk_dir}" \
   --build-context "oss_ap=${oss_ap_dir}/src/Ecu_Machine" \

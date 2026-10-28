@@ -17,7 +17,7 @@ RUN cmake -S /src/adaptive -B /build -G Ninja \
     && cmake --install /build --component Standalone \
     && test -x /opt/planning-ap/bin/EM \
     && test -x /opt/planning-ap/bin/CM \
-    && test -x /opt/planning-ap/opt/PlanningAA/bin/PlanningAA \
+    && test -x /opt/planning-ap/opt/DecisionAP/bin/decision-ap \
     && test -f /opt/planning-ap/lib/liblanelet2_core.so.0.1.0 \
     && test -f /opt/planning-ap/lib/liblanelet2_routing.so \
     && test -f /opt/planning-ap/lib/liblanelet2_traffic_rules.so

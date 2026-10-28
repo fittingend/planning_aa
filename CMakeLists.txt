@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(planning_aa_migration VERSION 0.1.0 LANGUAGES CXX)
+project(decision_ap VERSION 0.1.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)

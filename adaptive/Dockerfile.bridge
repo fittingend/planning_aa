@@ -1,5 +1,5 @@
 # Validate the Service Creator and OTAClient runtime built from local sources.
-ARG OSS_AP_IMAGE=oss-ap-planning-bridge:local
+ARG OSS_AP_IMAGE=decision-ap-bridge:local
 FROM ${OSS_AP_IMAGE}
 RUN test -x /opt/ap/opt/Exe_ServiceCreator/bin/Exe_ServiceCreator \
     && test -x /opt/ap/opt/OTAClient/bin/OTAClient \

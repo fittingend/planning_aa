@@ -1,8 +1,8 @@
 {
-  "generation-by": "planning-aa",
+  "generation-by": "decision-ap",
   "autosar-version": "R20-11",
   "manifest-type": "machine-manifest",
-  "machine-name": "PlanningMachine",
+  "machine-name": "DecisionMachine",
   "trusted-platform-executable-launch-behavior": "no-trusted-platform-support",
   "default-application-timeout": "undefined",
   "environment-variables": [],

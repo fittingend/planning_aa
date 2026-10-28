@@ -7,7 +7,7 @@ case "${arch}" in
   aarch64) suffix=-aarch64; docker_arch=arm64 ;;
   *) echo "Unsupported architecture: ${arch}" >&2; exit 1 ;;
 esac
-image="${INTEGRATED_IMAGE:-planning-aa-integrated:local${suffix}}"
+image="${INTEGRATED_IMAGE:-decision-ap:local${suffix}}"
 docker image inspect "${image}" >/dev/null || {
   echo "Integrated image is missing: ${image}; run ./adaptive/build-integrated-image.sh" >&2
   exit 1
@@ -17,7 +17,7 @@ if [[ "${image_arch}" != "${docker_arch}" ]]; then
   echo "Integrated image architecture mismatch: ${image} is ${image_arch}, expected ${docker_arch}" >&2
   exit 1
 fi
-network="${AP_NET:-planning-aa-net}"
+network="${AP_NET:-decision-ap-net}"
 subnet="${AP_SUBNET:-10.88.0.0/24}"
 address="${AP_BRIDGE_IP:-10.88.0.92}"
 
@@ -45,7 +45,7 @@ for key in RMW_IMPLEMENTATION CYCLONEDDS_URI PARA_LOG_LEVEL SERVICECREATOR_INPUT
 done
 
 docker run --rm --init --stop-timeout 10 --platform "linux/${docker_arch}" \
-  --name planning-aa-integrated \
+  --name decision-ap \
   "${network_args[@]}" \
   --shm-size="${PLANNING_AA_SHM_SIZE:-2g}" \
   -e "ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-42}" \

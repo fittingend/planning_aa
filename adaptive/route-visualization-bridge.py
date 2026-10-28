@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish Planning AA's full path as an RViz marker, separate from control."""
+"""Publish Decision AP's full path as an RViz marker, separate from control."""
 
 import math
 import socket
@@ -73,7 +73,7 @@ def main():
     receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     receiver.bind(("0.0.0.0", 12508))
     receiver.settimeout(1.0)
-    print("PlanningAA route visualization listening on UDP 12508", flush=True)
+    print("DecisionAP route visualization listening on UDP 12508", flush=True)
     try:
         while rclpy.ok():
             try:

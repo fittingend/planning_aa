@@ -8,27 +8,27 @@ case "${arch}" in
   aarch64) docker_arch=arm64; image_suffix=-aarch64; default_katech_repo=katech-autoware-system-control-arm64 ;;
   *) echo "Unsupported architecture: ${arch}" >&2; exit 1 ;;
 esac
-network="${AP_NET:-planning-aa-net}"
+network="${AP_NET:-decision-ap-net}"
 subnet="${AP_SUBNET:-10.88.0.0/24}"
 bridge_ip="${AP_BRIDGE_IP:-10.88.0.92}"
 planning_ip="${PLANNING_AA_IP:-10.88.0.93}"
 domain="${ROS_DOMAIN_ID:-42}"
-map_dir="${KATECH_MAP_PATH:-${repo_dir}/deployment/map/sample-map-planning}"
+map_dir="${KATECH_MAP_PATH:-${repo_dir}/deployment/map/sample-map-decision}"
 image_repo="${KATECH_IMAGE_REPO:-${default_katech_repo}}"
 perception_image="${KATECH_PERCEPTION_IMAGE:-${image_repo}:adsw-perception}"
 control_image="${KATECH_CONTROL_IMAGE:-${image_repo}:adsw-control}"
-perception_name="planning-aa-perception"
-control_name="planning-aa-control"
+perception_name="decision-ap-perception"
+control_name="decision-ap-control"
 rviz_mode="${KATECH_RVIZ:-auto}"
 log_windows="${KATECH_LOG_WINDOWS:-auto}"
 log_dir="${KATECH_LOG_DIR:-${repo_dir}/output/katech-logs/$(date +%Y%m%d_%H%M%S)_$$}"
-integrated="${PLANNING_AA_INTEGRATED:-0}"
+integrated="${DECISION_AP_INTEGRATED:-${PLANNING_AA_INTEGRATED:-0}}"
 network_mode="${KATECH_NETWORK_MODE:-bridge}"
 case "${network_mode}" in
   bridge) ;;
   host)
     if [[ "${integrated}" != 1 ]]; then
-      echo "KATECH_NETWORK_MODE=host requires PLANNING_AA_INTEGRATED=1." >&2
+      echo "KATECH_NETWORK_MODE=host requires DECISION_AP_INTEGRATED=1." >&2
       exit 1
     fi
     network_interface="${KATECH_NETWORK_INTERFACE:-}"
@@ -48,19 +48,19 @@ case "${network_mode}" in
 esac
 case "${integrated}" in
   0)
-    planning_containers=(planning-aa-bridge planning-aa)
-    planning_images=("${BRIDGE_IMAGE:-oss-ap-planning-bridge:local${image_suffix}}"
-                     "${IMAGE_TAG:-planning-aa-adaptive:local${image_suffix}}")
+    planning_containers=(decision-ap-bridge decision-ap-planning)
+    planning_images=("${BRIDGE_IMAGE:-decision-ap-bridge:local${image_suffix}}"
+                     "${IMAGE_TAG:-decision-ap-planning:local${image_suffix}}")
     planning_source_ip="${planning_ip}"
     planning_script=run-stack.sh
     ;;
   1)
-    planning_containers=(planning-aa-integrated)
-    planning_images=("${INTEGRATED_IMAGE:-planning-aa-integrated:local${image_suffix}}")
+    planning_containers=(decision-ap)
+    planning_images=("${INTEGRATED_IMAGE:-decision-ap:local${image_suffix}}")
     planning_source_ip="${bridge_ip}"
     planning_script=run-integrated.sh
     ;;
-  *) echo "PLANNING_AA_INTEGRATED must be 0 or 1" >&2; exit 1 ;;
+  *) echo "DECISION_AP_INTEGRATED must be 0 or 1" >&2; exit 1 ;;
 esac
 
 case "${rviz_mode}" in
@@ -96,7 +96,7 @@ if [[ "${network_mode}" == host && "${rviz_mode}" == true ]]; then
   exit 1
 fi
 rviz_sidecar=false
-rviz_name=planning-aa-rviz-x86
+rviz_name=decision-ap-rviz-x86
 if [[ "${rviz_mode}" == true && "${docker_arch}" == arm64 && "$(uname -m)" == x86_64 ]]; then
   rviz_sidecar=true
   rviz_mode=false
@@ -171,7 +171,10 @@ if [[ "${docker_arch}" == arm64 ]]; then
 fi
 echo "Perception image: ${perception_image}"
 echo "Control image: ${control_image}"
-for name in "${perception_name}" "${control_name}" "${rviz_name}" planning-aa-bridge planning-aa planning-aa-integrated; do
+for name in "${perception_name}" "${control_name}" "${rviz_name}" \
+            decision-ap-bridge decision-ap-planning decision-ap \
+            planning-aa-perception planning-aa-control planning-aa-rviz-x86 \
+            planning-aa-bridge planning-aa planning-aa-integrated; do
   if docker container inspect "${name}" >/dev/null 2>&1; then
     if [[ "$(docker container inspect -f '{{.State.Running}}' "${name}")" == true ]]; then
       echo "Container already running: ${name}; stop the previous stack before restarting." >&2
@@ -436,7 +439,7 @@ env "${planning_env[@]}" \
   PLANNING_AA_SIMULATION="${PLANNING_AA_SIMULATION:-1}" \
   PLANNING_AA_STATIC_MAP="${PLANNING_AA_STATIC_MAP:-1}" \
   AP_NET="${network}" bash "${repo_dir}/adaptive/${planning_script}" \
-  >"${log_dir}/planning-aa.log" 2>&1 &
+  >"${log_dir}/decision-ap.log" 2>&1 &
 stack_pid="$!"
 
 for attempt in {1..50}; do
@@ -446,7 +449,7 @@ for attempt in {1..50}; do
   sleep 0.2
 done
 if ! docker container inspect "${planning_containers[0]}" >/dev/null 2>&1; then
-  echo "Planning container did not start; inspect ${log_dir}/planning-aa.log" >&2
+  echo "Planning container did not start; inspect ${log_dir}/decision-ap.log" >&2
   exit 1
 fi
 collect_logs "${planning_containers[0]}" "${log_dir}/${planning_containers[0]}.log"
@@ -466,7 +469,7 @@ docker exec -i "${perception_name}" bash -c \
 route_visualization_pid="$!"
 validator_ready=false
 for attempt in {1..30}; do
-  if grep -q 'PlanningAA validator diagnostics listening' \
+  if grep -q 'DecisionAP validator diagnostics listening' \
       "${log_dir}/validator-diagnostic-bridge.log"; then
     validator_ready=true
     break
@@ -481,10 +484,10 @@ if [[ "${validator_ready}" != true ]] ||
   echo "AA validator diagnostic adapter failed; inspect ${log_dir}/validator-diagnostic-bridge.log" >&2
   exit 1
 fi
-if ! grep -q 'PlanningAA route visualization listening' \
+if ! grep -q 'DecisionAP route visualization listening' \
     "${log_dir}/route-visualization-bridge.log"; then
   for attempt in {1..30}; do
-    if grep -q 'PlanningAA route visualization listening' \
+    if grep -q 'DecisionAP route visualization listening' \
         "${log_dir}/route-visualization-bridge.log"; then
       break
     fi
@@ -494,7 +497,7 @@ if ! grep -q 'PlanningAA route visualization listening' \
     sleep 0.2
   done
 fi
-if ! grep -q 'PlanningAA route visualization listening' \
+if ! grep -q 'DecisionAP route visualization listening' \
     "${log_dir}/route-visualization-bridge.log" ||
    ! kill -0 "${route_visualization_pid}" 2>/dev/null; then
   echo "Route visualization adapter failed; inspect ${log_dir}/route-visualization-bridge.log" >&2

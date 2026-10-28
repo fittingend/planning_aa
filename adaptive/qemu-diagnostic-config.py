@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Adjust only PlanningAA trajectory liveness for ARM64 QEMU simulation."""
+"""Adjust only DecisionAP trajectory liveness for ARM64 QEMU simulation."""
 
 import argparse
 from pathlib import Path

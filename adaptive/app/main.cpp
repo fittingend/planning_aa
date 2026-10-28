@@ -427,7 +427,7 @@ void addTrafficSignals(
 class RouteService final : public RouteSkeleton {
  public:
   explicit RouteService(SharedState &state)
-      : RouteSkeleton(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_MP2SCr"}),
+      : RouteSkeleton(ara::core::InstanceSpecifier{"DecisionAP/AA/PPort_MP2SCr"}),
         state_(state) {}
 
   ara::core::Future<planning_missionplanning_missionplanner_clearrouteOutput>
@@ -498,7 +498,7 @@ class RouteService final : public RouteSkeleton {
 class RouteStateService final : public RouteStateSkeleton {
  public:
   explicit RouteStateService(SharedState &state)
-      : RouteStateSkeleton(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_MP2RS"}),
+      : RouteStateSkeleton(ara::core::InstanceSpecifier{"DecisionAP/AA/PPort_MP2RS"}),
         state_(state) {}
 
   ara::core::Future<planning_missionplanning_missionplanner_clearrouteOutput>
@@ -717,7 +717,7 @@ class InputService {
           INPUT_EVENTS(SUBSCRIBE)
 #undef SUBSCRIBE
           log_.LogInfo() << "Subscribed to Service Creator 4308";
-        }, ara::core::InstanceSpecifier{"PlanningAA/AA/RPort_SCr2MP"});
+        }, ara::core::InstanceSpecifier{"DecisionAP/AA/RPort_SCr2MP"});
     if (!found.HasValue()) {
       log_.LogError() << "Could not discover Service Creator";
       return false;
@@ -736,7 +736,7 @@ class InputService {
         static_cast<void>(InputProxy::StartFindService(
             [](ara::com::ServiceHandleContainer<InputProxy::HandleType>,
                ara::com::FindServiceHandle) {},
-            ara::core::InstanceSpecifier{"PlanningAA/AA/RPort_SCr2MP"}));
+            ara::core::InstanceSpecifier{"DecisionAP/AA/RPort_SCr2MP"}));
       }
       return;
     }
@@ -1229,16 +1229,16 @@ class FrameProducer {
 };
 
 bool runApplication(const sigset_t &shutdown_signals) {
-  auto &log = ara::log::CreateLogger("PLAA", "Planning AA communication");
+  auto &log = ara::log::CreateLogger("PLAA", "Decision AP communication");
   SharedState state;
   RouteService routes(state);
   RouteStateService route_state(state);
-  TrajectorySkeleton trajectory(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_PV2SCr"});
-  ScenarioSkeleton scenario_trajectory(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_SS2VS"});
-  TurnSkeleton turn(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_AA2SCrTurn"});
-  HazardSkeleton hazard(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_AA2SCrHazard"});
-  MetricsSkeleton metrics(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_AA2SCrMetrics"});
-  RemainingSkeleton remaining(ara::core::InstanceSpecifier{"PlanningAA/AA/PPort_AA2SCrRemaining"});
+  TrajectorySkeleton trajectory(ara::core::InstanceSpecifier{"DecisionAP/AA/PPort_PV2SCr"});
+  ScenarioSkeleton scenario_trajectory(ara::core::InstanceSpecifier{"DecisionAP/AA/PPort_SS2VS"});
+  TurnSkeleton turn(ara::core::InstanceSpecifier{"DecisionAP/AA/PPort_AA2SCrTurn"});
+  HazardSkeleton hazard(ara::core::InstanceSpecifier{"DecisionAP/AA/PPort_AA2SCrHazard"});
+  MetricsSkeleton metrics(ara::core::InstanceSpecifier{"DecisionAP/AA/PPort_AA2SCrMetrics"});
+  RemainingSkeleton remaining(ara::core::InstanceSpecifier{"DecisionAP/AA/PPort_AA2SCrRemaining"});
   auto route_offer = routes.OfferService();
   auto state_offer = route_state.OfferService();
   auto trajectory_offer = trajectory.OfferService();

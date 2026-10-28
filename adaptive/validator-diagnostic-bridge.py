@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish PlanningAA's measured validator results on Autoware diagnostics."""
+"""Publish DecisionAP's measured validator results on Autoware diagnostics."""
 
 import os
 import socket
@@ -64,7 +64,7 @@ def main():
     receiver.bind(("0.0.0.0", 12507))
     receiver.settimeout(0.5)
     expected_source = os.environ.get("PLANNING_AA_SOURCE_IP", "10.88.0.93")
-    print("PlanningAA validator diagnostics listening on UDP 12507", flush=True)
+    print("DecisionAP validator diagnostics listening on UDP 12507", flush=True)
     last_levels = None
     received = 0
     try:
@@ -77,7 +77,7 @@ def main():
                 continue
             decoded = decode_packet(packet)
             if decoded is None:
-                node.get_logger().warning("Invalid PlanningAA diagnostic packet")
+                node.get_logger().warning("Invalid DecisionAP diagnostic packet")
                 continue
             _, levels = decoded
             publisher.publish(make_diagnostic_array(
