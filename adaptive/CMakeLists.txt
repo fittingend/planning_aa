@@ -5,19 +5,16 @@ if(NOT PARA_SDK AND DEFINED ENV{PARA_SDK})
   set(PARA_SDK "$ENV{PARA_SDK}")
 endif()
 if(NOT PARA_SDK)
-  set(PARA_SDK "${CMAKE_CURRENT_SOURCE_DIR}/vendor/para-sdk/x86_64")
+  set(PARA_SDK "${CMAKE_CURRENT_SOURCE_DIR}/vendor/para-sdk/${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 if(NOT EXISTS "${PARA_SDK}/share/cmake/Modules/PARA/Para.cmake")
-  message(FATAL_ERROR "PARA SDK missing from adaptive/vendor/para-sdk/x86_64; set PARA_SDK to override")
+  message(FATAL_ERROR "PARA SDK missing from ${PARA_SDK}; set PARA_SDK to override")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${PARA_SDK}/share/cmake/Modules")
 include(PARA/Para)
 
 set(OSS_AP_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/vendor/oss-ap")
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../oss-ap-planning-bridge/src/Ecu_Machine/Exe_missionplanner/include/oss/srv/MP2RS/rs_si_missionplanner_skeleton.h")
-  set(OSS_AP_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/../../oss-ap-planning-bridge")
-endif()
 set(OSS_AP_SOURCE "${OSS_AP_DEFAULT}" CACHE PATH
     "Local copy of the generated ARA communication artifacts")
 set(OSS_ECU "${OSS_AP_SOURCE}/src/Ecu_Machine")
@@ -25,7 +22,7 @@ if(NOT EXISTS "${OSS_ECU}/Exe_ServiceCreator/include/oss/srv/SCr2MP/mp_si_servic
   message(FATAL_ERROR "Generated ARA artifacts missing from adaptive/vendor/oss-ap; set OSS_AP_SOURCE to override")
 endif()
 if(NOT EXISTS "${OSS_ECU}/Exe_missionplanner/include/oss/srv/MP2RS/rs_si_missionplanner_skeleton.h")
-  message(FATAL_ERROR "Service 1814 artifacts missing; set OSS_AP_SOURCE to oss-ap-planning-bridge")
+  message(FATAL_ERROR "Service 1814 artifacts missing from ${OSS_AP_SOURCE}")
 endif()
 
 # Stage the four service instances used by PlanningAA in the build tree.

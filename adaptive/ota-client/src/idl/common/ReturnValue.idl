@@ -1,0 +1,10 @@
+enum ReturnValue
+{
+    UNKNOWN,
+    SUCCESS,
+    FAIL
+};
+
+struct ReturnValueStruct {
+    ReturnValue rt;
+};

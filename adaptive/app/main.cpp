@@ -761,9 +761,16 @@ class InputService {
     std::lock_guard<std::mutex> lock(state_.mutex);
     const bool duplicate = state_.map && state_.map->data == map.data &&
         state_.map->header.frame_id == map.header.frame_id;
-    std::fprintf(stderr, "PLAA_MAP received bytes=%zu duplicate=%d\n",
-                 map.data.size(), duplicate ? 1 : 0);
-    if (duplicate) return;
+    const char *static_map_env = std::getenv("PLANNING_AA_STATIC_MAP");
+    const bool static_map = static_map_env && std::string(static_map_env) == "1";
+    // The sample Lanelet map is fixed for the lifetime of this process. Its
+    // serialized bytes can vary between publications, and a second sample can
+    // arrive before the first decode finishes. Decode only the first sample.
+    const bool same_static_map = static_map && state_.map &&
+        !state_.map->data.empty();
+    std::fprintf(stderr, "PLAA_MAP received bytes=%zu duplicate=%d static_duplicate=%d\n",
+                 map.data.size(), duplicate ? 1 : 0, same_static_map ? 1 : 0);
+    if (duplicate || same_static_map) return;
     state_.map = map;
     ++state_.map_generation;
     state_.changed.notify_one();

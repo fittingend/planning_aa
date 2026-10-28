@@ -3,13 +3,8 @@
 FROM ubuntu:22.04 AS build
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates cmake ninja-build g++ libeigen3-dev libboost-dev \
+    ca-certificates cmake ninja-build g++ libeigen3-dev libboost-dev libboost-serialization-dev \
     && rm -rf /var/lib/apt/lists/*
-
-COPY --from=boost_serialization /libboost_serialization.so.1.74.0 \
-    /usr/lib/x86_64-linux-gnu/libboost_serialization.so.1.74.0
-RUN ln -sf libboost_serialization.so.1.74.0 \
-    /usr/lib/x86_64-linux-gnu/libboost_serialization.so
 COPY --from=para_sdk / /opt/para-sdk
 COPY --from=oss_ap / /opt/oss-ap/src/Ecu_Machine
 COPY . /src
@@ -30,13 +25,11 @@ RUN cmake -S /src/adaptive -B /build -G Ninja \
 FROM ubuntu:22.04 AS runtime
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libstdc++6 libgcc-s1 ca-certificates \
+    libstdc++6 libgcc-s1 ca-certificates libboost-serialization1.74.0 \
     && rm -rf /var/lib/apt/lists/*
 ARG PARA_SDK_VERSION=unknown
 LABEL para.sdk.version="${PARA_SDK_VERSION}"
 COPY --from=build /opt/planning-ap /opt/planning-ap
-COPY --from=build /usr/lib/x86_64-linux-gnu/libboost_serialization.so.1.74.0 \
-    /usr/lib/x86_64-linux-gnu/libboost_serialization.so.1.74.0
 COPY adaptive/entrypoint.sh /opt/planning-ap/entrypoint.sh
 WORKDIR /opt/planning-ap
 ENTRYPOINT ["/opt/planning-ap/entrypoint.sh"]

@@ -7,3 +7,5 @@ CMakeCache.txt
 Testing/
 output/
 adaptive/vendor/
+deployment/images/*.tar.zst
+deployment/map/sample-map-planning/

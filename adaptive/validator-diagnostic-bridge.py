@@ -63,7 +63,7 @@ def main():
     receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     receiver.bind(("0.0.0.0", 12507))
     receiver.settimeout(0.5)
-    expected_source = os.environ.get("PLANNING_AA_SOURCE_IP", "192.168.100.93")
+    expected_source = os.environ.get("PLANNING_AA_SOURCE_IP", "10.88.0.93")
     print("PlanningAA validator diagnostics listening on UDP 12507", flush=True)
     last_levels = None
     received = 0

@@ -1,8 +1,9 @@
-# Validate the dedicated Service Creator image built from oss-ap-planning-bridge.
+# Validate the Service Creator and OTAClient runtime built from local sources.
 ARG OSS_AP_IMAGE=oss-ap-planning-bridge:local
 FROM ${OSS_AP_IMAGE}
 RUN test -x /opt/ap/opt/Exe_ServiceCreator/bin/Exe_ServiceCreator \
-    && test "$(find /opt/ap/opt -mindepth 1 -maxdepth 1 | wc -l)" -eq 1 \
-    && test "$(find /opt/ap/opt -path '*/etc/exec/*.json' -type f | wc -l)" -eq 1 \
-    && test "$(find /opt/ap/opt/Exe_ServiceCreator/etc/interface -name '*.json' -type f | wc -l)" -eq 4 \
-    && test "$(find /opt/ap/etc/com/someip -name '*.json' -type f | wc -l)" -eq 4
+    && test -x /opt/ap/opt/OTAClient/bin/OTAClient \
+    && test "$(find /opt/ap/opt -mindepth 1 -maxdepth 1 | wc -l)" -eq 2 \
+    && test "$(find /opt/ap/opt -path '*/etc/exec/*.json' -type f | wc -l)" -eq 2 \
+    && test "$(find /opt/ap/opt/Exe_ServiceCreator/etc/interface -name '*.json' -type f | wc -l)" -eq 9 \
+    && test "$(find /opt/ap/etc/com/someip -name '*.json' -type f | wc -l)" -eq 9

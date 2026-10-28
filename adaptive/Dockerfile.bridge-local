@@ -1,0 +1,48 @@
+# Build the dedicated Service Creator from the local, excluded vendor context.
+FROM ros:humble-ros-base-jammy AS build
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake ninja-build python3-colcon-common-extensions libboost-dev \
+    ros-humble-rmw-cyclonedds-cpp ros-humble-geographic-msgs \
+    ros-humble-unique-identifier-msgs ros-humble-shape-msgs \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=para_sdk / /opt/para-sdk
+COPY --from=bridge_vendor /src /workspace/src
+COPY adaptive/cmake/ros-library-probe.cmake /opt/ros-library-probe.cmake
+WORKDIR /workspace
+RUN . /opt/ros/humble/setup.sh \
+    && colcon build --merge-install \
+      --packages-up-to ecu_machine autoware_vehicle_msgs \
+        autoware_internal_msgs tier4_metric_msgs \
+      --packages-skip ecu_machine \
+      --build-base /workspace/build --install-base /opt/ap \
+      --parallel-workers 4 \
+      --cmake-args -DCMAKE_BUILD_TYPE=Release -DPARA_SDK=/opt/para-sdk \
+        -DCMAKE_PROJECT_INCLUDE=/opt/ros-library-probe.cmake
+COPY adaptive/ota-client /workspace/src/Ecu_Machine/OTAClient
+RUN printf '\nadd_subdirectory(OTAClient)\n' >> /workspace/src/Ecu_Machine/CMakeLists.txt
+RUN . /opt/ros/humble/setup.sh \
+    && . /opt/ap/setup.sh \
+    && colcon build --merge-install --packages-select ecu_machine \
+      --build-base /workspace/build --install-base /opt/ap \
+      --parallel-workers 4 \
+      --cmake-args -DCMAKE_BUILD_TYPE=Release -DPARA_SDK=/opt/para-sdk \
+        -DCMAKE_PROJECT_INCLUDE=/opt/ros-library-probe.cmake
+RUN cmake --install /workspace/build/ecu_machine --component Standalone \
+    && test -x /opt/ap/opt/Exe_ServiceCreator/bin/Exe_ServiceCreator \
+    && test -x /opt/ap/opt/OTAClient/bin/OTAClient \
+    && test "$(find /opt/ap/opt -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 2 \
+    && test "$(find /opt/ap/etc/com/someip -name '*.json' -type f | wc -l)" -eq 9
+
+FROM ros:humble-ros-core-jammy AS runtime
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-humble-rmw-cyclonedds-cpp ros-humble-geographic-msgs iproute2 \
+    && rm -rf /var/lib/apt/lists/*
+ARG PARA_SDK_VERSION=unknown
+LABEL para.sdk.version="${PARA_SDK_VERSION}"
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+COPY --from=build /opt/ap /opt/ap
+COPY --from=bridge_vendor /docker/entrypoint/ap_entrypoint.sh /oss/entrypoint.sh
+RUN mkdir -p /opt/ap/var/logs
+ENTRYPOINT ["/oss/entrypoint.sh"]

@@ -1,0 +1,204 @@
+FROM ghcr.io/oss-test-group/autoware-partition:adsw-control AS control
+
+FROM ros:humble-ros-base-jammy AS build
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CMAKE_BUILD_PARALLEL_LEVEL=1 MAKEFLAGS="-j1 -l1"
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential python3-colcon-common-extensions \
+      libfmt-dev libyaml-cpp-dev ros-humble-diagnostic-updater && \
+    rm -rf /var/lib/apt/lists/*
+COPY --from=control /opt/autoware /opt/autoware
+RUN ls -l /opt/autoware/lib/libautoware_internal_debug_msgs__rosidl_generator_c.so && \
+    test -f /opt/autoware/share/autoware_internal_debug_msgs/cmake/autoware_internal_debug_msgsConfig.cmake
+RUN printf '%s\n' \
+      'find_library(_arm64_qemu_library_probe NAMES autoware_internal_debug_msgs__rosidl_generator_c PATHS /opt/autoware/lib NO_DEFAULT_PATH)' \
+      'if(NOT _arm64_qemu_library_probe)' \
+      '  message(FATAL_ERROR "Autoware library lookup failed")' \
+      'endif()' \
+      'find_library(_arm64_qemu_ros_probe NAMES builtin_interfaces__rosidl_generator_c PATHS /opt/ros/humble/lib NO_DEFAULT_PATH)' \
+      'if(NOT _arm64_qemu_ros_probe)' \
+      '  message(FATAL_ERROR "ROS library lookup failed")' \
+      'endif()' > /opt/arm64-library-probe.cmake
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+WORKDIR /work
+
+# The published Control partition predates the local System-in-Control change.
+FROM build AS compile
+COPY src/universe/autoware.universe/system/ src/system/
+COPY src/universe/autoware.universe/launch/tier4_system_launch/ src/tier4_system_launch/
+COPY src/universe/autoware.universe/obigo_launch/ src/obigo_launch/
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_topic_state_monitor autoware_diagnostic_graph_aggregator \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_diagnostic_graph_utils \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ros-humble-logging-demo ros-humble-pcl-ros ros-humble-pcl-conversions && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libnl-genl-3-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_system_monitor \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_component_state_monitor \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_dummy_diag_publisher \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake \
+        -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/aarch64-linux-gnu/libcrypto.so \
+        -DOPENSSL_SSL_LIBRARY=/usr/lib/aarch64-linux-gnu/libssl.so
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      nlohmann-json3-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_duplicated_node_checker \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake \
+        -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/aarch64-linux-gnu/libcrypto.so \
+        -DOPENSSL_SSL_LIBRARY=/usr/lib/aarch64-linux-gnu/libssl.so
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_processing_time_checker \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake \
+        -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/aarch64-linux-gnu/libcrypto.so \
+        -DOPENSSL_SSL_LIBRARY=/usr/lib/aarch64-linux-gnu/libssl.so
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ros-humble-geographic-msgs && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_mrm_comfortable_stop_operator \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake \
+        -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/aarch64-linux-gnu/libcrypto.so \
+        -DOPENSSL_SSL_LIBRARY=/usr/lib/aarch64-linux-gnu/libssl.so
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_mrm_emergency_stop_operator \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake \
+        -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/aarch64-linux-gnu/libcrypto.so \
+        -DOPENSSL_SSL_LIBRARY=/usr/lib/aarch64-linux-gnu/libssl.so
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_hazard_status_converter \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake \
+        -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/aarch64-linux-gnu/libcrypto.so \
+        -DOPENSSL_SSL_LIBRARY=/usr/lib/aarch64-linux-gnu/libssl.so
+
+RUN test -f /usr/lib/aarch64-linux-gnu/libflann.so && \
+    test -f /usr/include/flann/flann.hpp
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-select autoware_mrm_handler \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake \
+        -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/aarch64-linux-gnu/libcrypto.so \
+        -DOPENSSL_SSL_LIBRARY=/usr/lib/aarch64-linux-gnu/libssl.so \
+        -DFLANN_LIBRARY=/usr/lib/aarch64-linux-gnu/libflann.so \
+        -DFLANN_INCLUDE_DIR=/usr/include
+
+RUN source /opt/ros/humble/setup.bash && \
+    source /opt/autoware/setup.bash && \
+    source /opt/autoware-system/setup.bash && \
+    colcon build --base-paths /work/src --merge-install \
+      --install-base /opt/autoware-system \
+      --packages-up-to \
+        autoware_system_diagnostic_monitor \
+        tier4_system_launch \
+        obigo_launch \
+      --packages-skip autoware_topic_state_monitor \
+        autoware_diagnostic_graph_aggregator autoware_diagnostic_graph_utils \
+        autoware_system_monitor autoware_component_state_monitor \
+        autoware_duplicated_node_checker autoware_processing_time_checker \
+        autoware_dummy_diag_publisher autoware_mrm_comfortable_stop_operator \
+        autoware_mrm_emergency_stop_operator autoware_hazard_status_converter \
+        autoware_mrm_handler \
+      --parallel-workers 1 \
+      --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PROJECT_INCLUDE=/opt/arm64-library-probe.cmake \
+        -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/aarch64-linux-gnu/libcrypto.so \
+        -DOPENSSL_SSL_LIBRARY=/usr/lib/aarch64-linux-gnu/libssl.so
+
+FROM control
+COPY --from=compile /opt/autoware-system /opt/autoware-system
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libnl-genl-3-200 && \
+    rm -rf /var/lib/apt/lists/*
+RUN sed -i '\#source /opt/autoware/setup.bash#a\    source /opt/autoware-system/setup.bash' /ros_entrypoint.sh && \
+    grep -q 'name="launch_system" value="true"' \
+      /opt/autoware-system/share/obigo_launch/launch/sample_adsw_control_run.launch.xml

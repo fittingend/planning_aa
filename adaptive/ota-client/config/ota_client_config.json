@@ -1,0 +1,10 @@
+{
+  "client_name": "autosar_ota_client",
+  "apps": [
+    {
+      "name": "adsw_monitor",
+      "status": "installed"
+    }
+  ],
+  "registration_retry_ms": 2000
+}
